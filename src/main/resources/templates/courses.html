@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Courses - SEU Question Bank</title>
+</head>
+<body>
+<section>
+    <div class="container py-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="bi bi-collection me-2 text-primary"></i>Courses</h2>
+                <p class="text-muted mb-0"><span th:text="${totalCourses}">0</span> courses found</p>
+            </div>
+            <form method="get" th:action="@{/courses}" class="d-flex" style="max-width: 420px; width:100%;">
+                <input type="text" name="q" th:value="${q}" class="form-control me-2" placeholder="Search by code or title (e.g. CSE, Database)">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                <a th:if="${q != null and !q.isEmpty()}" href="/courses" class="btn btn-outline-secondary ms-2">Clear</a>
+            </form>
+        </div>
+
+        <div th:if="${courses.isEmpty()}" class="alert alert-info">No courses found for "<span th:text="${q}"></span>". Try a different keyword.</div>
+
+        <div class="row g-3" th:if="${!courses.isEmpty()}">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Title</th>
+                                <th class="text-center">Credit</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="c : ${courses}">
+                                <td><span class="badge bg-primary" th:text="${c.courseCode}">CSE141</span></td>
+                                <td class="fw-medium" th:text="${c.title}">Title</td>
+                                <td class="text-center" th:text="${c.credit % 1 == 0 ? #numbers.formatDecimal(c.credit,1,0) : c.credit}">3</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${c.category.name() == 'CORE'} ? 'bg-success' : (${c.category.name() == 'ELECTIVE'} ? 'bg-warning text-dark' : (${c.category.name() == 'GENERAL'} ? 'bg-info text-dark' : (${c.category.name() == 'PROJECT_INTERNSHIP'} ? 'bg-dark' : (${c.category.name() == 'RESEARCH_METHODOLOGY'} ? 'bg-secondary' : 'bg-light text-dark border'))))"
+                                          th:text="${c.category}">CORE</span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border" th:text="${c.courseType}">THEORY</span></td>
+                                <td><a th:href="@{'/courses/' + ${c.courseCode}}" class="btn btn-sm btn-outline-primary">Details</a></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card view for mobile alternative -->
+        <div class="row g-3 d-none">
+            <div th:each="c : ${courses}" class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2" th:text="${c.courseCode}">CSE141</span>
+                        <h6 class="card-title" th:text="${c.title}">Title</h6>
+                        <p class="small text-muted mb-2"><span th:text="${c.credit}">3</span> credits &middot; <span th:text="${c.category}">CORE</span> &middot; <span th:text="${c.courseType}">THEORY</span></p>
+                        <a th:href="@{'/courses/' + ${c.courseCode}}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

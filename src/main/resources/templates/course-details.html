@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:text="${course.courseCode + ' - ' + course.title + ' - SEU Question Bank'}">Course Details</title>
+</head>
+<body>
+<section>
+    <div class="container py-4">
+        <a href="/courses" class="btn btn-outline-secondary btn-sm mb-3"><i class="bi bi-arrow-left me-1"></i> Back to Courses</a>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="badge bg-primary fs-6" th:text="${course.courseCode}">CSE141</span>
+                    <h3 class="mb-0 ms-2" th:text="${course.title}">Computer Fundamentals</h3>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Course Code</span>
+                                <strong th:text="${course.courseCode}">CSE141</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Credit</span>
+                                <strong th:text="${course.credit % 1 == 0 ? #numbers.formatDecimal(course.credit,1,0) : course.credit}">3</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Category</span>
+                                <span class="badge bg-success" th:text="${course.category}">CORE</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Course Type</span>
+                                <span class="badge bg-light text-dark border" th:text="${course.courseType}">THEORY</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Program</span>
+                                <strong th:text="${course.programCode}">CSE</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Active</span>
+                                <span th:text="${course.active ? 'Yes' : 'No'}" class="badge" th:classappend="${course.active} ? 'bg-success' : 'bg-danger'">Yes</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <div class="text-muted small">Prerequisites</div>
+                                <div th:if="${course.prerequisiteCodes == null or course.prerequisiteCodes.isEmpty()}" class="text-muted fst-italic">None</div>
+                                <div th:if="${course.prerequisiteCodes != null and !course.prerequisiteCodes.isEmpty()}">
+                                    <span th:each="pre, iterStat : ${course.prerequisiteCodes}" class="badge bg-secondary me-1" th:text="${pre}">CSE141</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Alternate Course</span>
+                                <span th:if="${course.alternateCourseCode != null}" th:text="${course.alternateCourseCode}" class="fw-medium">EEE133</span>
+                                <span th:if="${course.alternateCourseCode == null}" class="text-muted fst-italic">None</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Minimum Semester</span>
+                                <span th:if="${course.minimumSemester != null}" th:text="${course.minimumSemester}" class="fw-medium">5</span>
+                                <span th:if="${course.minimumSemester == null}" class="text-muted fst-italic">Not specified</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-muted">Required Credits</span>
+                                <span th:if="${course.requiredCredits != null}" th:text="${course.requiredCredits}" class="fw-medium">100</span>
+                                <span th:if="${course.requiredCredits == null}" class="text-muted fst-italic">Not specified</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-light border mt-4 small text-muted">
+            <i class="bi bi-info-circle me-1"></i> This course is part of the SEU CSE curriculum. Question papers will be associated with Course Offerings (semester/faculty) in a later phase.
+        </div>
+    </div>
+</section>
+</body>
+</html>

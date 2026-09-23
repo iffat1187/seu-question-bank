@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>SEU Question Bank - Home</title>
+</head>
+<body>
+<section>
+    <!-- Hero -->
+    <div class="bg-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold">SEU Question Bank</h1>
+                    <p class="lead mb-3">A student-driven academic question-paper sharing platform for Southeast University.</p>
+                    <p class="mb-4">Browse the complete CSE curriculum, explore courses, and prepare with organized academic resources. Built for students, by students.</p>
+                    <a href="/courses" class="btn btn-light btn-lg px-4 me-2"><i class="bi bi-book me-2"></i>Browse Courses</a>
+                    <a href="/api/courses" class="btn btn-outline-light">View API</a>
+                </div>
+                <div class="col-lg-4 text-center d-none d-lg-block">
+                    <i class="bi bi-mortarboard" style="font-size: 9rem; opacity: 0.85;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="container py-5">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="text-primary mb-2"><i class="bi bi-journals" style="font-size:2.2rem;"></i></div>
+                    <h2 class="fw-bold" th:text="${courseCount}">0</h2>
+                    <p class="text-muted mb-0">Courses in Curriculum</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="text-success mb-2"><i class="bi bi-building" style="font-size:2.2rem;"></i></div>
+                    <h2 class="fw-bold" th:text="${departmentCount}">0</h2>
+                    <p class="text-muted mb-0">Departments</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="text-warning mb-2"><i class="bi bi-award" style="font-size:2.2rem;"></i></div>
+                    <h2 class="fw-bold" th:text="${programCount}">0</h2>
+                    <p class="text-muted mb-0">Programs</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Program info -->
+        <div class="row mt-5">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>BSc in CSE at SEU</h5>
+                        <div class="row small text-muted g-2 mt-2">
+                            <div class="col-sm-6"><strong>Degree:</strong> BSc in CSE</div>
+                            <div class="col-sm-6"><strong>Current Batch:</strong> 65</div>
+                            <div class="col-sm-6"><strong>Minimum CGPA:</strong> 2.5</div>
+                            <div class="col-sm-6"><strong>Duration:</strong> 4 &ndash; 6 years</div>
+                            <div class="col-sm-6"><strong>Minimum Courses:</strong> 64</div>
+                            <div class="col-sm-6"><strong>Minimum Credits:</strong> 150</div>
+                        </div>
+                        <hr>
+                        <div class="row small g-2">
+                            <div class="col-6 col-md-4">General: 12 cr / 4 courses</div>
+                            <div class="col-6 col-md-4">Core: 112 cr / 48 courses</div>
+                            <div class="col-6 col-md-4">Elective: 20 cr / 8 courses</div>
+                            <div class="col-6 col-md-4">Project/Internship: 3 cr / 1 course</div>
+                            <div class="col-6 col-md-4">Research Methodology: 3 cr / 3 courses</div>
+                            <div class="col-6 col-md-4">Remedial/Non-Credit: 0 cr</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mt-4 mt-lg-0">
+                <div class="card border-0 shadow-sm bg-primary text-white h-100">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <h5>Academic Structure</h5>
+                        <p class="small opacity-75">Program &rarr; Department &rarr; Course &rarr; Course Offering &rarr; Faculty</p>
+                        <p class="small">Question papers will be linked to Course Offerings, keeping faculty assignments per semester flexible.</p>
+                        <a href="/courses" class="btn btn-light mt-auto">Explore Courses &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>
