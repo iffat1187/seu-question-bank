@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:text="${paper.courseCode + ' — ' + paper.courseTitle + ' — SEU Question Bank'}">Paper Details</title>
+</head>
+<body>
+<section>
+    <div class="container py-4" style="max-width: 880px;">
+        <a th:href="@{/question-papers}" class="btn btn-ghost btn-sm mb-3"><i class="bi bi-arrow-left me-1"></i> Back to Papers</a>
+
+        <div th:if="${success}" class="alert py-2 small mb-3" style="background: rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.25); color:#86efac; border-radius:10px;" th:text="${success}"></div>
+        <div th:if="${error}" class="alert py-2 small mb-3" style="background: rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.25); color:#fda4af; border-radius:10px;" th:text="${error}"></div>
+
+        <div class="card-seu overflow-hidden">
+            <div class="p-4" style="background: linear-gradient(135deg, #1a162e 0%, #171725 100%); border-bottom: 1px solid var(--border);">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <span class="badge badge-purple fs-6 px-3 py-2" th:text="${paper.courseCode}">CSE141</span>
+                    <h2 class="mb-0 text-white" th:text="${paper.courseTitle}" style="font-weight:750; letter-spacing:-0.02em;">Computer Fundamentals</h2>
+                    <span class="badge ms-auto" th:classappend="${paper.status.name() == 'APPROVED'} ? 'badge-core' : (${paper.status.name() == 'PENDING'} ? 'badge-elective' : 'badge-remedial')" th:text="${paper.status}">PENDING</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <span class="badge badge-type" th:text="${paper.examType != null ? paper.examType : '—'}">FINAL</span>
+                    <span class="badge badge-type" th:text="${paper.semester != null ? paper.semester : ''} + ${paper.academicYear != null ? ' ' + paper.academicYear : ''}">Spring 2026</span>
+                    <span class="badge badge-type" th:if="${paper.facultyName != null}" th:text="'Faculty: ' + ${paper.facultyName}">Faculty</span>
+                    <span class="badge badge-type" th:text="${paper.uploadedBy}">student@seu.edu.bd</span>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card-seu p-0 overflow-hidden" style="border-radius:12px;">
+                            <div class="p-3 small fw-semibold text-white" style="background: var(--bg-secondary); border-bottom:1px solid var(--border);">Overview</div>
+                            <div class="p-3">
+                                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid rgba(38,38,58,0.5);"><span class="detail-label">Course Code</span><span class="detail-value" th:text="${paper.courseCode}">CSE141</span></div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid rgba(38,38,58,0.5);"><span class="detail-label">Course Title</span><span class="detail-value" th:text="${paper.courseTitle}">Title</span></div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid rgba(38,38,58,0.5);"><span class="detail-label">Faculty</span><span class="detail-value" th:text="${paper.facultyName != null ? paper.facultyName : '—'}">—</span></div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid rgba(38,38,58,0.5);"><span class="detail-label">Semester</span><span class="detail-value" th:text="${paper.semester != null ? paper.semester : '—'}">Spring</span></div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid rgba(38,38,58,0.5);"><span class="detail-label">Academic Year</span><span class="detail-value" th:text="${paper.academicYear != null ? paper.academicYear : '—'}">2026</span></div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid rgba(38,38,58,0.5);"><span class="detail-label">Exam Type</span><span class="badge badge-type" th:text="${paper.examType}">FINAL</span></div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid rgba(38,38,58,0.5);"><span class="detail-label">Status</span><span class="badge" th:classappend="${paper.status.name() == 'APPROVED'} ? 'badge-core' : (${paper.status.name() == 'PENDING'} ? 'badge-elective' : 'badge-remedial')" th:text="${paper.status}">PENDING</span></div>
+                                <div class="d-flex justify-content-between py-2"><span class="detail-label">Uploaded By</span><span class="detail-value" style="word-break:break-all;" th:text="${paper.uploadedBy}">student</span></div>
+                                <div class="d-flex justify-content-between py-2"><span class="detail-label">Created At</span><span class="detail-value" th:text="${paper.createdAt != null ? #temporals.format(paper.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">2026-09-23</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card-seu p-0 overflow-hidden" style="border-radius:12px;">
+                            <div class="p-3 small fw-semibold text-white" style="background: var(--bg-secondary); border-bottom:1px solid var(--border);">Images</div>
+                            <div class="p-3">
+                                <div th:if="${paper.imageUrls == null or paper.imageUrls.isEmpty()}" class="small fst-italic" style="color: var(--text-muted);">No images — URLs will be added in Phase 4 via Cloudinary.</div>
+                                <div th:if="${paper.imageUrls != null and !paper.imageUrls.isEmpty()}">
+                                    <div th:each="url : ${paper.imageUrls}" class="mb-3">
+                                        <div class="small mb-1" style="color: var(--text-secondary); word-break: break-all;"><a th:href="${url}" th:text="${url}" target="_blank" style="color: var(--purple-light);">url</a></div>
+                                        <img th:src="${url}" alt="Question paper image" class="img-fluid rounded" style="border:1px solid var(--border); max-height: 260px; object-fit: contain; background: var(--bg-secondary);" onerror="this.style.display='none'">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <a th:if="${canEdit}" th:href="@{'/question-papers/' + ${paper.id} + '/edit'}" class="btn btn-purple"><i class="bi bi-pencil me-1"></i> Edit</a>
+                    <form th:if="${canDelete}" th:action="@{'/question-papers/' + ${paper.id} + '/delete'}" method="post" onsubmit="return confirm('Delete this paper? This cannot be undone.');">
+                        <button type="submit" class="btn btn-ghost" style="color:#fda4af; border-color: rgba(244,63,94,0.3);"><i class="bi bi-trash me-1"></i> Delete</button>
+                    </form>
+                    <div th:if="${isAdmin}" class="ms-auto d-flex gap-2 align-items-center">
+                        <form th:action="@{'/question-papers/' + ${paper.id} + '/status'}" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="status" value="APPROVED">
+                            <button th:if="${paper.status.name() != 'APPROVED'}" type="submit" class="btn btn-ghost" style="color:#86efac; border-color: rgba(16,185,129,0.3);"><i class="bi bi-check-lg me-1"></i> Approve</button>
+                        </form>
+                        <form th:action="@{'/question-papers/' + ${paper.id} + '/status'}" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="status" value="REJECTED">
+                            <button th:if="${paper.status.name() != 'REJECTED'}" type="submit" class="btn btn-ghost" style="color:#fda4af; border-color: rgba(244,63,94,0.3);"><i class="bi bi-x-lg me-1"></i> Reject</button>
+                        </form>
+                        <form th:action="@{'/question-papers/' + ${paper.id} + '/status'}" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="status" value="PENDING">
+                            <button th:if="${paper.status.name() != 'PENDING'}" type="submit" class="btn btn-ghost"><i class="bi bi-hourglass me-1"></i> Pending</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div th:if="${!canEdit && !isAdmin}" class="small mt-3 p-3 rounded-3" style="background: var(--purple-soft); border:1px solid var(--purple-border); color: var(--text-secondary);">
+                    <span sec:authorize="isAnonymous()"><i class="bi bi-lock me-1"></i> Only approved papers are visible to public. Login as owner or ADMIN to edit.</span>
+                    <span sec:authorize="isAuthenticated()"><i class="bi bi-info-circle me-1"></i> You can only edit/delete your own <strong class="text-white">PENDING</strong> papers.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

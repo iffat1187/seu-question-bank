@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Upload Paper — SEU Question Bank</title>
+</head>
+<body>
+<section>
+    <div class="container py-4" style="max-width: 760px;">
+        <a th:href="@{/question-papers}" class="btn btn-ghost btn-sm mb-3"><i class="bi bi-arrow-left me-1"></i> Back to Papers</a>
+
+        <div class="card-seu p-4">
+            <h3 class="text-white fw-bold mb-1"><i class="bi bi-cloud-arrow-up me-2 text-purple"></i>Upload Question Paper</h3>
+            <p class="small mb-4" style="color: var(--text-secondary);">Status will be <span class="badge badge-elective">PENDING</span> until ADMIN approves. For now enter image URLs directly (Phase 4 will add Cloudinary upload).</p>
+
+            <form th:action="@{/question-papers/create}" th:object="${questionPaper}" method="post" novalidate>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="courseCode" class="form-label small fw-semibold" style="color: var(--text-secondary);">Course Code *</label>
+                        <select id="courseCode" th:field="*{courseCode}" class="form-control form-control-seu" th:classappend="${#fields.hasErrors('courseCode')} ? 'is-invalid' : ''">
+                            <option value="">Select course</option>
+                            <option th:each="c : ${courses}" th:value="${c.courseCode}" th:text="${c.courseCode + ' — ' + c.title}">CSE141</option>
+                        </select>
+                        <div class="invalid-feedback d-block small" th:if="${#fields.hasErrors('courseCode')}" th:errors="*{courseCode}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="courseTitle" class="form-label small fw-semibold" style="color: var(--text-secondary);">Course Title (auto)</label>
+                        <input type="text" id="courseTitle" th:field="*{courseTitle}" class="form-control form-control-seu" placeholder="Auto-filled from course">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="facultyName" class="form-label small fw-semibold" style="color: var(--text-secondary);">Faculty Name</label>
+                        <input type="text" id="facultyName" th:field="*{facultyName}" class="form-control form-control-seu" placeholder="e.g. Dr. Rahman">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="semester" class="form-label small fw-semibold" style="color: var(--text-secondary);">Semester</label>
+                        <select id="semester" th:field="*{semester}" class="form-control form-control-seu">
+                            <option value="">Select</option>
+                            <option value="Spring">Spring</option>
+                            <option value="Fall">Fall</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="academicYear" class="form-label small fw-semibold" style="color: var(--text-secondary);">Year</label>
+                        <input type="number" id="academicYear" th:field="*{academicYear}" class="form-control form-control-seu" placeholder="2026" min="2000" max="2100">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="examType" class="form-label small fw-semibold" style="color: var(--text-secondary);">Exam Type</label>
+                        <select id="examType" th:field="*{examType}" class="form-control form-control-seu">
+                            <option value="">Select</option>
+                            <option th:each="et : ${examTypes}" th:value="${et}" th:text="${et}">FINAL</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="imageUrlsText" class="form-label small fw-semibold" style="color: var(--text-secondary);">Image URLs (one per line or comma-separated)</label>
+                        <textarea id="imageUrlsText" name="imageUrlsText" class="form-control form-control-seu" rows="3" placeholder="https://example.com/page1.jpg&#10;https://example.com/page2.jpg" th:text="${imageUrlsText}"></textarea>
+                        <div class="small mt-1" style="color: var(--text-muted);">For now paste direct image URLs. In Phase 4 this will be file upload via Cloudinary.</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-purple w-100 mt-4 py-2">Submit for Approval <i class="bi bi-send ms-1"></i></button>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

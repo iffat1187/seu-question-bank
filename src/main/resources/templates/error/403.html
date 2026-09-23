@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>403 — Forbidden</title>
+</head>
+<body>
+<section>
+    <div class="container py-5 text-center">
+        <div class="card-seu p-5 mx-auto" style="max-width: 560px;">
+            <div class="mb-3 d-inline-flex align-items-center justify-content-center rounded-circle" style="width:64px; height:64px; background: rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.25);"><i class="bi bi-shield-lock" style="font-size:1.6rem; color:#fda4af;"></i></div>
+            <h2 class="text-white">403 — Forbidden</h2>
+            <p class="small mb-4" style="color: var(--text-secondary);">You don’t have permission to perform this action. Students can only edit/delete their own <strong class="text-white">PENDING</strong> papers.</p>
+            <a th:href="@{/question-papers}" class="btn btn-purple">Back to Papers</a>
+        </div>
+    </div>
+</section>
+</body>
+</html>

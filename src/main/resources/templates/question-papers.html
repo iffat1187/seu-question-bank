@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Question Papers — SEU Question Bank</title>
+</head>
+<body>
+<section>
+    <div class="container py-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold text-white mb-1"><i class="bi bi-file-earmark-text me-2 text-purple"></i>Question Papers</h2>
+                <p class="small mb-0" style="color: var(--text-secondary);">
+                    <span th:text="${#lists.size(papers)}">0</span> paper<span th:if="${#lists.size(papers) != 1}">s</span>
+                    <span th:if="${isAdmin}"> — Admin view (all)</span>
+                    <span th:if="${!isAdmin}" sec:authorize="isAnonymous()"> — Approved only (public)</span>
+                    <span th:if="${!isAdmin}" sec:authorize="isAuthenticated()"> — Approved + yours</span>
+                </p>
+            </div>
+            <div sec:authorize="isAuthenticated()" class="d-flex gap-2">
+                <a th:href="@{/question-papers/create}" class="btn btn-purple"><i class="bi bi-plus-lg me-1"></i> Upload Paper</a>
+            </div>
+            <div sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" class="btn btn-ghost">Login to upload</a>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert py-2 small mb-3" style="background: rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.25); color:#86efac; border-radius:10px;" th:text="${success}"></div>
+        <div th:if="${error}" class="alert py-2 small mb-3" style="background: rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.25); color:#fda4af; border-radius:10px;" th:text="${error}"></div>
+
+        <div th:if="${#lists.isEmpty(papers)}" class="empty-state">
+            <i class="bi bi-inbox" style="font-size:2rem;"></i>
+            <h6 class="text-white mt-2">No question papers found.</h6>
+            <p class="small mb-3" style="color: var(--text-secondary);">
+                <span sec:authorize="isAnonymous()">Approved papers will appear here. Login to upload the first one.</span>
+                <span sec:authorize="isAuthenticated()">No papers yet — be the first to contribute!</span>
+            </p>
+            <a sec:authorize="isAuthenticated()" th:href="@{/question-papers/create}" class="btn btn-purple btn-sm">Upload Paper</a>
+        </div>
+
+        <div class="row g-3" th:if="${!#lists.isEmpty(papers)}">
+            <div th:each="p : ${papers}" class="col-md-6 col-lg-4">
+                <div class="card-seu p-3 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                        <span class="badge badge-purple" th:text="${p.courseCode}">CSE141</span>
+                        <span class="badge" th:classappend="${p.status.name() == 'APPROVED'} ? 'badge-core' : (${p.status.name() == 'PENDING'} ? 'badge-elective' : 'badge-remedial')" th:text="${p.status}">PENDING</span>
+                    </div>
+                    <h6 class="text-white mb-1" th:text="${p.courseTitle != null ? p.courseTitle : p.courseCode}" style="font-weight:700;">Computer Fundamentals</h6>
+                    <div class="small mb-2 d-flex flex-wrap gap-2">
+                        <span class="badge badge-type" th:text="${p.examType != null ? p.examType : '—'}">FINAL</span>
+                        <span class="badge badge-type" th:text="${p.semester != null ? p.semester : ''} + ${p.academicYear != null ? ' ' + p.academicYear : ''}">Spring 2026</span>
+                        <span class="badge badge-type" th:if="${p.facultyName != null}" th:text="${p.facultyName}">Faculty</span>
+                    </div>
+                    <div class="small mb-3" style="color: var(--text-secondary);">
+                        <div><i class="bi bi-person me-1"></i><span th:text="${p.uploadedBy}">student@seu.edu.bd</span></div>
+                        <div th:if="${p.createdAt != null}"><i class="bi bi-clock me-1"></i><span th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm')}">2026-09-23</span></div>
+                    </div>
+                    <div class="mt-auto d-flex gap-2">
+                        <a th:href="@{'/question-papers/' + ${p.id}}" class="btn btn-ghost btn-sm flex-grow-1">View Details</a>
+                        <span th:if="${p.imageUrls != null and !p.imageUrls.isEmpty()}" class="badge badge-type align-self-center" th:text="${#lists.size(p.imageUrls)} + ' img'">1 img</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

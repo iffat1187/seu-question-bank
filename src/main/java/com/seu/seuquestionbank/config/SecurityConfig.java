@@ -25,6 +25,8 @@ public class SecurityConfig {
                         "/css/**", "/js/**", "/images/**",
                         "/api/**",
                         "/actuator/**", "/error").permitAll()
+                .requestMatchers("/question-papers/create", "/question-papers/*/edit", "/question-papers/*/delete", "/question-papers/*/status").authenticated()
+                .requestMatchers("/question-papers", "/question-papers/*").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/profile").authenticated()
                 .anyRequest().authenticated()
