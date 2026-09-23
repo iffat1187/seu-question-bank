@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, content)">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:fragment="layout(title, content)">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,6 +20,10 @@
                 <li class="nav-item"><a class="nav-link" th:classappend="${#strings.equals(currentPath,'/') ? 'active' : ''}" href="/" th:href="@{/}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${#strings.startsWith(currentPath,'/courses') ? 'active' : ''}" th:href="@{/courses}">Courses</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${#strings.startsWith(currentPath,'/departments') ? 'active' : ''}" th:href="@{/departments}">Departments</a></li>
+                <li class="nav-item" sec:authorize="isAnonymous()"><a class="nav-link" th:classappend="${#strings.equals(currentPath,'/login') ? 'active' : ''}" th:href="@{/login}">Login</a></li>
+                <li class="nav-item" sec:authorize="isAnonymous()"><a class="nav-link" th:classappend="${#strings.equals(currentPath,'/register') ? 'active' : ''}" th:href="@{/register}">Register</a></li>
+                <li class="nav-item" sec:authorize="isAuthenticated()"><a class="nav-link" th:classappend="${#strings.equals(currentPath,'/profile') ? 'active' : ''}" th:href="@{/profile}"><i class="bi bi-person me-1"></i>Profile</a></li>
+                <li class="nav-item" sec:authorize="isAuthenticated()"><form th:action="@{/logout}" method="post" class="d-inline"><button type="submit" class="nav-link btn btn-link" style="color: var(--text-secondary); text-decoration: none; border:none; background:none; padding:0.45rem 0.9rem;">Logout</button></form></li>
             </ul>
         </div>
     </div>

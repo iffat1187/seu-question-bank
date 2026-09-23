@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Register — SEU Question Bank</title>
+</head>
+<body>
+<section>
+    <div class="container py-5" style="max-width: 560px;">
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-3 mb-3" style="width:52px; height:52px; background: var(--purple-soft); border:1px solid var(--purple-border);"><i class="bi bi-person-plus text-purple" style="font-size:1.4rem;"></i></div>
+            <h2 class="text-white fw-bold" style="letter-spacing:-0.02em;">Create your account</h2>
+            <p class="small" style="color: var(--text-secondary);">Join SEU Question Bank — student-driven academic resources</p>
+        </div>
+
+        <div class="card-seu p-4">
+            <form th:action="@{/register}" th:object="${registerDto}" method="post" novalidate>
+                <div class="mb-3">
+                    <label for="name" class="form-label small fw-semibold" style="color: var(--text-secondary);">Full Name</label>
+                    <input type="text" id="name" th:field="*{name}" class="form-control form-control-seu" placeholder="e.g. Abrar Shahriar" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback d-block small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name error</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label small fw-semibold" style="color: var(--text-secondary);">Email</label>
+                    <input type="email" id="email" th:field="*{email}" class="form-control form-control-seu" placeholder="you@seu.edu.bd" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback d-block small" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email error</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label small fw-semibold" style="color: var(--text-secondary);">Password</label>
+                    <input type="password" id="password" th:field="*{password}" class="form-control form-control-seu" placeholder="At least 6 characters" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback d-block small" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password error</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirmPassword" class="form-label small fw-semibold" style="color: var(--text-secondary);">Confirm Password</label>
+                    <input type="password" id="confirmPassword" th:field="*{confirmPassword}" class="form-control form-control-seu" placeholder="Repeat password" th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback d-block small" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">Confirm error</div>
+                </div>
+
+                <button type="submit" class="btn btn-purple w-100 py-2">Create Account <i class="bi bi-arrow-right ms-1"></i></button>
+            </form>
+
+            <div class="text-center small mt-3" style="color: var(--text-secondary);">
+                Already have an account? <a th:href="@{/login}" class="text-purple" style="text-decoration:none; font-weight:600;">Log in</a>
+            </div>
+        </div>
+
+        <div class="text-center small mt-3" style="color: var(--text-muted);">
+            <i class="bi bi-shield-lock me-1"></i> Passwords are securely hashed with BCrypt. Default role: STUDENT.
+        </div>
+    </div>
+</section>
+</body>
+</html>
