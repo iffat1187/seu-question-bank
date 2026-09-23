@@ -1,82 +1,91 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
 <head>
-    <title th:text="${course.courseCode + ' - ' + course.title + ' - SEU Question Bank'}">Course Details</title>
+    <title th:text="${course.courseCode + ' — ' + course.title + ' — SEU Question Bank'}">Course Details</title>
 </head>
 <body>
 <section>
     <div class="container py-4">
-        <a href="/courses" class="btn btn-outline-secondary btn-sm mb-3"><i class="bi bi-arrow-left me-1"></i> Back to Courses</a>
+        <a th:href="@{/courses}" class="btn btn-ghost btn-sm mb-3"><i class="bi bi-arrow-left me-1"></i> Back to Courses</a>
 
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <span class="badge bg-primary fs-6" th:text="${course.courseCode}">CSE141</span>
-                    <h3 class="mb-0 ms-2" th:text="${course.title}">Computer Fundamentals</h3>
+        <div class="card-seu overflow-hidden">
+            <div class="p-4" style="background: linear-gradient(135deg, #1a162e 0%, #171725 100%); border-bottom: 1px solid var(--border);">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <span class="badge badge-purple fs-6 px-3 py-2" th:text="${course.courseCode}">CSE141</span>
+                    <h2 class="mb-0 text-white" th:text="${course.title}" style="font-weight: 750; letter-spacing: -0.02em;">Computer Fundamentals</h2>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <span class="badge"
+                          th:classappend="${course.category.name() == 'CORE'} ? 'badge-core' : (${course.category.name() == 'ELECTIVE'} ? 'badge-elective' : (${course.category.name() == 'GENERAL'} ? 'badge-general' : (${course.category.name() == 'PROJECT_INTERNSHIP'} ? 'badge-project' : (${course.category.name() == 'RESEARCH_METHODOLOGY'} ? 'badge-research' : 'badge-remedial'))))"
+                          th:text="${course.category}">CORE</span>
+                    <span class="badge badge-type" th:text="${course.courseType}">THEORY</span>
+                    <span class="badge badge-type"><i class="bi bi-star me-1"></i><span th:text="${course.credit % 1 == 0 ? #numbers.formatDecimal(course.credit,1,0) : course.credit}">3</span> credits</span>
+                    <span class="badge badge-type" th:text="${course.programCode}">CSE</span>
                 </div>
             </div>
-            <div class="card-body p-4">
+            <div class="p-4">
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Course Code</span>
-                                <strong th:text="${course.courseCode}">CSE141</strong>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Credit</span>
-                                <strong th:text="${course.credit % 1 == 0 ? #numbers.formatDecimal(course.credit,1,0) : course.credit}">3</strong>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Category</span>
-                                <span class="badge bg-success" th:text="${course.category}">CORE</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Course Type</span>
-                                <span class="badge bg-light text-dark border" th:text="${course.courseType}">THEORY</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Program</span>
-                                <strong th:text="${course.programCode}">CSE</strong>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Active</span>
-                                <span th:text="${course.active ? 'Yes' : 'No'}" class="badge" th:classappend="${course.active} ? 'bg-success' : 'bg-danger'">Yes</span>
-                            </li>
-                        </ul>
+                        <div class="card-seu p-0 overflow-hidden" style="border-radius: 12px;">
+                            <div class="p-3 small fw-semibold text-white" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border);">Overview</div>
+                            <div class="p-3">
+                                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid rgba(38,38,58,0.5);">
+                                    <span class="detail-label">Course Code</span><span class="detail-value" th:text="${course.courseCode}">CSE141</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid rgba(38,38,58,0.5);">
+                                    <span class="detail-label">Credit</span><span class="detail-value" th:text="${course.credit % 1 == 0 ? #numbers.formatDecimal(course.credit,1,0) : course.credit}">3</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid rgba(38,38,58,0.5);">
+                                    <span class="detail-label">Category</span><span class="badge" th:classappend="${course.category.name() == 'CORE'} ? 'badge-core' : (${course.category.name() == 'ELECTIVE'} ? 'badge-elective' : (${course.category.name() == 'GENERAL'} ? 'badge-general' : (${course.category.name() == 'PROJECT_INTERNSHIP'} ? 'badge-project' : (${course.category.name() == 'RESEARCH_METHODOLOGY'} ? 'badge-research' : 'badge-remedial'))))" th:text="${course.category}">CORE</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid rgba(38,38,58,0.5);">
+                                    <span class="detail-label">Type</span><span class="badge badge-type" th:text="${course.courseType}">THEORY</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid rgba(38,38,58,0.5);">
+                                    <span class="detail-label">Program</span><span class="detail-value" th:text="${course.programCode}">CSE</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2">
+                                    <span class="detail-label">Active</span><span th:text="${course.active ? 'Yes' : 'No'}" class="badge" th:classappend="${course.active} ? 'badge-core' : 'badge-remedial'">Yes</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <div class="text-muted small">Prerequisites</div>
-                                <div th:if="${course.prerequisiteCodes == null or course.prerequisiteCodes.isEmpty()}" class="text-muted fst-italic">None</div>
-                                <div th:if="${course.prerequisiteCodes != null and !course.prerequisiteCodes.isEmpty()}">
-                                    <span th:each="pre, iterStat : ${course.prerequisiteCodes}" class="badge bg-secondary me-1" th:text="${pre}">CSE141</span>
+                        <div class="card-seu p-0 overflow-hidden" style="border-radius: 12px;">
+                            <div class="p-3 small fw-semibold text-white" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border);">Prerequisites & Requirements</div>
+                            <div class="p-3">
+                                <div class="py-2" style="border-bottom: 1px solid rgba(38,38,58,0.5);">
+                                    <div class="detail-label mb-2">Prerequisites</div>
+                                    <div th:if="${course.prerequisiteCodes == null or course.prerequisiteCodes.isEmpty()}" style="color: var(--text-muted);" class="small fst-italic">None</div>
+                                    <div th:if="${course.prerequisiteCodes != null and !course.prerequisiteCodes.isEmpty()}" class="d-flex flex-wrap gap-2">
+                                        <a th:each="pre : ${course.prerequisiteCodes}" th:href="@{'/courses/' + ${pre}}" class="badge badge-type" style="text-decoration:none;" th:text="${pre}">CSE141</a>
+                                    </div>
                                 </div>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Alternate Course</span>
-                                <span th:if="${course.alternateCourseCode != null}" th:text="${course.alternateCourseCode}" class="fw-medium">EEE133</span>
-                                <span th:if="${course.alternateCourseCode == null}" class="text-muted fst-italic">None</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Minimum Semester</span>
-                                <span th:if="${course.minimumSemester != null}" th:text="${course.minimumSemester}" class="fw-medium">5</span>
-                                <span th:if="${course.minimumSemester == null}" class="text-muted fst-italic">Not specified</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span class="text-muted">Required Credits</span>
-                                <span th:if="${course.requiredCredits != null}" th:text="${course.requiredCredits}" class="fw-medium">100</span>
-                                <span th:if="${course.requiredCredits == null}" class="text-muted fst-italic">Not specified</span>
-                            </li>
-                        </ul>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid rgba(38,38,58,0.5);">
+                                    <span class="detail-label">Alternate Course</span>
+                                    <span th:if="${course.alternateCourseCode != null}" th:text="${course.alternateCourseCode}" class="detail-value">EEE133</span>
+                                    <span th:if="${course.alternateCourseCode == null}" style="color: var(--text-muted);" class="small fst-italic">None</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2" style="border-bottom: 1px solid rgba(38,38,58,0.5);">
+                                    <span class="detail-label">Minimum Semester</span>
+                                    <span th:if="${course.minimumSemester != null}" th:text="${course.minimumSemester}" class="detail-value">5</span>
+                                    <span th:if="${course.minimumSemester == null}" style="color: var(--text-muted);" class="small fst-italic">Not specified</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2">
+                                    <span class="detail-label">Required Credits</span>
+                                    <span th:if="${course.requiredCredits != null}" th:text="${course.requiredCredits}" class="detail-value">100</span>
+                                    <span th:if="${course.requiredCredits == null}" style="color: var(--text-muted);" class="small fst-italic">Not specified</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="alert alert-light border mt-4 small text-muted">
-            <i class="bi bi-info-circle me-1"></i> This course is part of the SEU CSE curriculum. Question papers will be associated with Course Offerings (semester/faculty) in a later phase.
+                <div class="d-flex flex-wrap gap-2 mt-4 p-3 rounded-3" style="background: var(--purple-soft); border: 1px solid var(--purple-border); color: var(--text-secondary);">
+                    <i class="bi bi-info-circle text-purple mt-1"></i>
+                    <div class="small">This course is part of the SEU CSE curriculum. In a later phase, question papers will be linked to <strong class="text-white">Course Offerings</strong> (semester, faculty, batch) so the same course can show different papers per offering.</div>
+                </div>
+            </div>
         </div>
     </div>
 </section>

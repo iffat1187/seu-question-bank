@@ -3,6 +3,7 @@ package com.seu.seuquestionbank.controller;
 import com.seu.seuquestionbank.service.CourseService;
 import com.seu.seuquestionbank.service.DepartmentService;
 import com.seu.seuquestionbank.service.ProgramService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,10 +24,11 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public String home(Model model) {
+    public String home(Model model, HttpServletRequest request) {
         model.addAttribute("courseCount", courseService.count());
         model.addAttribute("programCount", programService.count());
         model.addAttribute("departmentCount", departmentService.count());
+        model.addAttribute("currentPath", request.getRequestURI());
         return "home";
     }
 }

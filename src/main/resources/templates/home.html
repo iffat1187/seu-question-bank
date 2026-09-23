@@ -1,88 +1,138 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
 <head>
-    <title>SEU Question Bank - Home</title>
+    <title>SEU Question Bank — Home</title>
 </head>
 <body>
 <section>
     <!-- Hero -->
-    <div class="bg-primary text-white py-5">
+    <div class="hero-seu">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <h1 class="display-5 fw-bold">SEU Question Bank</h1>
-                    <p class="lead mb-3">A student-driven academic question-paper sharing platform for Southeast University.</p>
-                    <p class="mb-4">Browse the complete CSE curriculum, explore courses, and prepare with organized academic resources. Built for students, by students.</p>
-                    <a href="/courses" class="btn btn-light btn-lg px-4 me-2"><i class="bi bi-book me-2"></i>Browse Courses</a>
-                    <a href="/api/courses" class="btn btn-outline-light">View API</a>
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: var(--purple-soft); border: 1px solid var(--purple-border); color: var(--purple-light); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em;">
+                        <i class="bi bi-mortarboard"></i> SOUTHEAST UNIVERSITY
+                    </div>
+                    <h1 class="hero-title display-5 text-white mb-3">SEU Question Bank</h1>
+                    <p class="hero-subtitle mb-4">A student-driven academic resource platform for Southeast University. Organize, discover and prepare with the complete CSE curriculum — crafted for students, by students.</p>
+
+                    <!-- Search -->
+                    <form id="homeSearchForm" th:action="@{/courses}" method="get" class="d-flex gap-2 mb-3" style="max-width: 520px;">
+                        <div class="flex-grow-1 position-relative">
+                            <i class="bi bi-search position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                            <input type="text" name="q" class="form-control form-control-seu ps-5" placeholder="Search courses, course codes...  e.g. CSE141, Database" aria-label="Search courses">
+                        </div>
+                        <button type="submit" class="btn btn-purple px-4">Search</button>
+                    </form>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a th:href="@{/courses}" class="btn btn-purple"><i class="bi bi-book me-2"></i>Browse Courses</a>
+                        <a th:href="@{/departments}" class="btn btn-ghost"><i class="bi bi-building me-2"></i>Explore Departments</a>
+                    </div>
+                    <p class="small mt-3 mb-0" style="color: var(--text-muted);">Independent student project · Not an official SEU system · Phase 1.5 Premium UI</p>
                 </div>
-                <div class="col-lg-4 text-center d-none d-lg-block">
-                    <i class="bi bi-mortarboard" style="font-size: 9rem; opacity: 0.85;"></i>
+                <div class="col-lg-5 d-none d-lg-block">
+                    <div class="card-seu p-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="d-flex align-items-center justify-content-center rounded-3" style="width:48px; height:48px; background: var(--purple-soft); border: 1px solid var(--purple-border);"><i class="bi bi-journals text-purple" style="font-size:1.4rem;"></i></div>
+                            <div>
+                                <div class="small" style="color: var(--text-muted);">BSc in CSE</div>
+                                <div class="fw-semibold text-white">Academic Structure</div>
+                            </div>
+                        </div>
+                        <div class="small p-3 rounded-3 mb-3" style="background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary);">
+                            <div class="d-flex justify-content-between mb-1"><span>Program</span><strong class="text-white">CSE</strong></div>
+                            <div class="d-flex justify-content-between mb-1"><span>Duration</span><strong class="text-white">4 — 6 years</strong></div>
+                            <div class="d-flex justify-content-between mb-1"><span>Credits</span><strong class="text-white">150</strong></div>
+                            <div class="d-flex justify-content-between"><span>Current Batch</span><strong class="text-white">65</strong></div>
+                        </div>
+                        <div class="d-flex gap-2 small">
+                            <span class="badge badge-purple">CORE 112 cr</span>
+                            <span class="badge badge-elective">ELECTIVE 20 cr</span>
+                            <span class="badge badge-general">GENERAL 12 cr</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Stats -->
-    <div class="container py-5">
-        <div class="row g-4">
+    <div class="container py-4">
+        <div class="row g-3">
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 text-center p-4">
-                    <div class="text-primary mb-2"><i class="bi bi-journals" style="font-size:2.2rem;"></i></div>
-                    <h2 class="fw-bold" th:text="${courseCount}">0</h2>
-                    <p class="text-muted mb-0">Courses in Curriculum</p>
+                <div class="card-seu p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="small" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600;">Total Courses</span>
+                        <span class="d-flex align-items-center justify-content-center rounded-2" style="width:36px; height:36px; background: var(--purple-soft); border:1px solid var(--purple-border);"><i class="bi bi-collection text-purple"></i></span>
+                    </div>
+                    <div class="display-6 fw-bold text-white mb-1" th:text="${courseCount}">90</div>
+                    <div class="small" style="color: var(--text-secondary);">Curriculum courses available</div>
+                    <a th:href="@{/courses}" class="small text-purple d-inline-flex align-items-center gap-1 mt-2" style="text-decoration:none;">Browse all <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 text-center p-4">
-                    <div class="text-success mb-2"><i class="bi bi-building" style="font-size:2.2rem;"></i></div>
-                    <h2 class="fw-bold" th:text="${departmentCount}">0</h2>
-                    <p class="text-muted mb-0">Departments</p>
+                <div class="card-seu p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="small" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600;">Departments</span>
+                        <span class="d-flex align-items-center justify-content-center rounded-2" style="width:36px; height:36px; background: rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.22);"><i class="bi bi-building" style="color:#7dd3fc;"></i></span>
+                    </div>
+                    <div class="display-6 fw-bold text-white mb-1" th:text="${departmentCount}">1</div>
+                    <div class="small" style="color: var(--text-secondary);">Active academic departments</div>
+                    <a th:href="@{/departments}" class="small text-purple d-inline-flex align-items-center gap-1 mt-2" style="text-decoration:none;">Explore <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 text-center p-4">
-                    <div class="text-warning mb-2"><i class="bi bi-award" style="font-size:2.2rem;"></i></div>
-                    <h2 class="fw-bold" th:text="${programCount}">0</h2>
-                    <p class="text-muted mb-0">Programs</p>
+                <div class="card-seu p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="small" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600;">Academic Resources</span>
+                        <span class="d-flex align-items-center justify-content-center rounded-2" style="width:36px; height:36px; background: rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.22);"><i class="bi bi-award" style="color:#86efac;"></i></span>
+                    </div>
+                    <div class="display-6 fw-bold text-white mb-1" th:text="${programCount}">1</div>
+                    <div class="small" style="color: var(--text-secondary);">Programs configured</div>
+                    <div class="small mt-2" style="color: var(--text-muted);">Question papers link to Course Offerings</div>
                 </div>
             </div>
         </div>
 
-        <!-- Program info -->
-        <div class="row mt-5">
+        <!-- Structure -->
+        <div class="row g-3 mt-1">
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>BSc in CSE at SEU</h5>
-                        <div class="row small text-muted g-2 mt-2">
-                            <div class="col-sm-6"><strong>Degree:</strong> BSc in CSE</div>
-                            <div class="col-sm-6"><strong>Current Batch:</strong> 65</div>
-                            <div class="col-sm-6"><strong>Minimum CGPA:</strong> 2.5</div>
-                            <div class="col-sm-6"><strong>Duration:</strong> 4 &ndash; 6 years</div>
-                            <div class="col-sm-6"><strong>Minimum Courses:</strong> 64</div>
-                            <div class="col-sm-6"><strong>Minimum Credits:</strong> 150</div>
+                <div class="card-seu p-4 h-100">
+                    <h5 class="text-white mb-3"><i class="bi bi-diagram-3 me-2 text-purple"></i>BSc in CSE at SEU — At a Glance</h5>
+                    <div class="row g-3 small">
+                        <div class="col-6 col-sm-3">
+                            <div style="color: var(--text-muted);">Degree</div><div class="fw-semibold text-white">BSc in CSE</div>
                         </div>
-                        <hr>
-                        <div class="row small g-2">
-                            <div class="col-6 col-md-4">General: 12 cr / 4 courses</div>
-                            <div class="col-6 col-md-4">Core: 112 cr / 48 courses</div>
-                            <div class="col-6 col-md-4">Elective: 20 cr / 8 courses</div>
-                            <div class="col-6 col-md-4">Project/Internship: 3 cr / 1 course</div>
-                            <div class="col-6 col-md-4">Research Methodology: 3 cr / 3 courses</div>
-                            <div class="col-6 col-md-4">Remedial/Non-Credit: 0 cr</div>
+                        <div class="col-6 col-sm-3">
+                            <div style="color: var(--text-muted);">CGPA</div><div class="fw-semibold text-white">2.5 minimum</div>
                         </div>
+                        <div class="col-6 col-sm-3">
+                            <div style="color: var(--text-muted);">Courses</div><div class="fw-semibold text-white">64 minimum</div>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <div style="color: var(--text-muted);">Credits</div><div class="fw-semibold text-white">150 minimum</div>
+                        </div>
+                    </div>
+                    <hr style="border-color: var(--border); opacity: 0.6;" class="my-3">
+                    <div class="row g-2 small" style="color: var(--text-secondary);">
+                        <div class="col-6 col-md-4 d-flex justify-content-between pe-3"><span>General</span><strong class="text-white">12 cr / 4</strong></div>
+                        <div class="col-6 col-md-4 d-flex justify-content-between pe-3"><span>Core</span><strong class="text-white">112 cr / 48</strong></div>
+                        <div class="col-6 col-md-4 d-flex justify-content-between pe-3"><span>Elective</span><strong class="text-white">20 cr / 8</strong></div>
+                        <div class="col-6 col-md-4 d-flex justify-content-between pe-3"><span>Project/Internship</span><strong class="text-white">3 cr / 1</strong></div>
+                        <div class="col-6 col-md-4 d-flex justify-content-between pe-3"><span>Research Method.</span><strong class="text-white">3 cr / 3</strong></div>
+                        <div class="col-6 col-md-4 d-flex justify-content-between pe-3"><span>Remedial</span><strong class="text-white">0 cr</strong></div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 mt-4 mt-lg-0">
-                <div class="card border-0 shadow-sm bg-primary text-white h-100">
-                    <div class="card-body p-4 d-flex flex-column">
-                        <h5>Academic Structure</h5>
-                        <p class="small opacity-75">Program &rarr; Department &rarr; Course &rarr; Course Offering &rarr; Faculty</p>
-                        <p class="small">Question papers will be linked to Course Offerings, keeping faculty assignments per semester flexible.</p>
-                        <a href="/courses" class="btn btn-light mt-auto">Explore Courses &rarr;</a>
+            <div class="col-lg-4">
+                <div class="card-seu p-4 h-100 d-flex flex-column" style="background: linear-gradient(180deg, #1a162e 0%, #171725 100%); border-color: var(--purple-border);">
+                    <h6 class="text-white">How it’s organized</h6>
+                    <div class="d-flex align-items-center gap-2 small mb-2" style="color: var(--purple-light); font-weight: 600; letter-spacing: 0.03em;">
+                        Program <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i> Department <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i> Course
                     </div>
+                    <div class="small mb-3" style="color: var(--text-secondary);">Each paper will belong to a <strong class="text-white">Course Offering</strong> (semester, faculty, batch) — not a permanent faculty assignment. This keeps CSE141 flexible across semesters.</div>
+                    <a th:href="@{/courses}" class="btn btn-purple mt-auto w-100">Start exploring <i class="bi bi-arrow-right ms-1"></i></a>
                 </div>
             </div>
         </div>

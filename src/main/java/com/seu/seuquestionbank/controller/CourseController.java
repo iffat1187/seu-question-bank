@@ -2,6 +2,7 @@ package com.seu.seuquestionbank.controller;
 
 import com.seu.seuquestionbank.model.Course;
 import com.seu.seuquestionbank.service.CourseService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ public class CourseController {
     }
 
     @GetMapping("/courses")
-    public String courses(@RequestParam(value = "q", required = false) String q, Model model) {
+    public String courses(@RequestParam(value = "q", required = false) String q, Model model, HttpServletRequest request) {
         List<Course> courses;
         if (q != null && !q.isBlank()) {
             courses = courseService.search(q);
@@ -31,16 +32,18 @@ public class CourseController {
         model.addAttribute("courses", courses);
         model.addAttribute("q", q);
         model.addAttribute("totalCourses", courses.size());
+        model.addAttribute("currentPath", request.getRequestURI());
         return "courses";
     }
 
     @GetMapping("/courses/{courseCode}")
-    public String courseDetails(@PathVariable String courseCode, Model model) {
+    public String courseDetails(@PathVariable String courseCode, Model model, HttpServletRequest request) {
         Optional<Course> courseOpt = courseService.findByCourseCode(courseCode);
         if (courseOpt.isEmpty()) {
             return "error/404";
         }
         model.addAttribute("course", courseOpt.get());
+        model.addAttribute("currentPath", request.getRequestURI());
         return "course-details";
     }
 }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Departments — SEU Question Bank</title>
+</head>
+<body>
+<section>
+    <div class="container py-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold text-white mb-1"><i class="bi bi-building me-2 text-purple"></i>Departments</h2>
+                <p class="small mb-0" style="color: var(--text-secondary);">Academic departments at Southeast University</p>
+            </div>
+            <div class="small px-3 py-2 rounded-pill" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);">
+                <span th:text="${#lists.size(departments)}">1</span> department<span th:if="${#lists.size(departments) != 1}">s</span> · <span th:text="${activeCount}">1</span> active
+            </div>
+        </div>
+
+        <div th:if="${departments.isEmpty()}" class="empty-state">
+            <i class="bi bi-building-x" style="font-size:2rem;"></i>
+            <h6 class="text-white mt-2">No departments available.</h6>
+            <p class="small mb-0" style="color: var(--text-secondary);">Departments will appear here once added to the system.</p>
+        </div>
+
+        <div class="row g-3" th:if="${!departments.isEmpty()}">
+            <div th:each="d : ${departments}" class="col-md-6 col-lg-4">
+                <div class="card-seu p-4 h-100 d-flex flex-column">
+                    <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+                        <div class="d-flex align-items-center justify-content-center rounded-3" style="width:44px; height:44px; background: var(--purple-soft); border:1px solid var(--purple-border);"><i class="bi bi-building text-purple" style="font-size:1.2rem;"></i></div>
+                        <span class="badge" th:classappend="${d.active} ? 'badge-core' : 'badge-remedial'" th:text="${d.active ? 'Active' : 'Inactive'}">Active</span>
+                    </div>
+                    <div class="mb-1 small" style="color: var(--purple-light); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;" th:text="${d.code}">CSE</div>
+                    <h5 class="text-white mb-2" th:text="${d.name}" style="font-weight:700; letter-spacing: -0.02em;">Department of Computer Science and Engineering</h5>
+                    <p class="small mb-3" style="color: var(--text-secondary);">Part of the SEU academic structure. Courses are organized under programs within this department.</p>
+                    <div class="mt-auto d-flex gap-2">
+                        <a th:href="@{/courses}" class="btn btn-purple btn-sm flex-grow-1">View Courses <i class="bi bi-arrow-right ms-1" style="font-size:0.75rem;"></i></a>
+                        <span class="btn btn-ghost btn-sm px-3 disabled" style="opacity:0.7;" th:text="${d.code}">CSE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Context card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card-seu p-4 h-100 d-flex flex-column" style="border-style: dashed; background: transparent;">
+                    <h6 class="text-white mb-2"><i class="bi bi-info-circle me-2 text-purple"></i>How departments work</h6>
+                    <p class="small mb-3" style="color: var(--text-secondary);">Departments group programs and faculties. Clicking a department will later filter courses — for now all CSE courses live under the CSE department.</p>
+                    <ul class="small mb-0" style="color: var(--text-muted); padding-left: 1.1rem;">
+                        <li>Program → Department → Course</li>
+                        <li>Courses have prerequisites & alternates</li>
+                        <li>Offerings capture semester/faculty</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

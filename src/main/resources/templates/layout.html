@@ -17,9 +17,15 @@
         </button>
         <div class="collapse navbar-collapse" id="navMain">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
-                <li class="nav-item"><a class="nav-link" th:classappend="${#strings.equals(currentPath,'/') ? 'active' : ''}" href="/" th:href="@{/}">Home</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${#strings.startsWith(currentPath,'/courses') ? 'active' : ''}" th:href="@{/courses}">Courses</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${#strings.startsWith(currentPath,'/departments') ? 'active' : ''}" th:href="@{/departments}">Departments</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${#strings.equals(currentPath,'/') ? 'active' : ''}" href="/" th:href="@{/}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${#strings.startsWith(currentPath,'/courses') ? 'active' : ''}" th:href="@{/courses}">Courses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${#strings.startsWith(currentPath,'/departments') ? 'active' : ''}" th:href="@{/departments}">Departments</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -38,7 +44,7 @@
                 <p class="small mb-0" style="color: var(--text-muted);">Independent student project for organizing and sharing academic study resources. Not an official SEU system.</p>
             </div>
             <div class="col-md-5 text-md-end small" style="color: var(--text-muted);">
-                <div>Phase 1.5 &middot; Premium Dark UI</div>
+                <div>Phase 1.5 &middot; Premium Dark UI &middot; <span th:text="${courseCount != null ? courseCount : ''}"></span></div>
                 <div class="mt-1">
                     <a th:href="@{/courses}" class="me-3">Browse Courses</a>
                     <a th:href="@{/departments}">Departments</a>

@@ -1,72 +1,99 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
 <head>
-    <title>Courses - SEU Question Bank</title>
+    <title>Courses — SEU Question Bank</title>
 </head>
 <body>
 <section>
     <div class="container py-4">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
             <div>
-                <h2 class="fw-bold mb-1"><i class="bi bi-collection me-2 text-primary"></i>Courses</h2>
-                <p class="text-muted mb-0"><span th:text="${totalCourses}">0</span> courses found</p>
+                <h2 class="fw-bold text-white mb-1"><i class="bi bi-collection me-2 text-purple"></i>Courses</h2>
+                <p class="mb-0 small" style="color: var(--text-secondary);">
+                    <span id="courseCount" th:attr="data-total=${totalCourses + ' courses'}" th:text="${totalCourses + ' courses'}">90 courses</span>
+                    <span class="mx-2" style="color: var(--border-light);">·</span>
+                    <span>Search by code or title — try <code style="color: var(--purple-light); background: var(--purple-soft); padding:2px 6px; border-radius:6px;">CSE</code> or <code style="color: var(--purple-light); background: var(--purple-soft); padding:2px 6px; border-radius:6px;">Database</code></span>
+                </p>
             </div>
-            <form method="get" th:action="@{/courses}" class="d-flex" style="max-width: 420px; width:100%;">
-                <input type="text" name="q" th:value="${q}" class="form-control me-2" placeholder="Search by code or title (e.g. CSE, Database)">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
-                <a th:if="${q != null and !q.isEmpty()}" href="/courses" class="btn btn-outline-secondary ms-2">Clear</a>
-            </form>
+            <div class="d-flex gap-2 w-100" style="max-width: 460px;">
+                <div class="position-relative flex-grow-1">
+                    <i class="bi bi-search position-absolute" style="left:12px; top:50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input id="courseSearchInput" type="text" class="form-control form-control-seu ps-5" placeholder="Search courses... (e.g. Java, CSE38)" th:value="${q}" aria-label="Search courses" autocomplete="off">
+                </div>
+                <button id="clearSearchBtn" type="button" class="btn btn-ghost px-3" aria-label="Clear search"><i class="bi bi-x-lg"></i></button>
+            </div>
         </div>
 
-        <div th:if="${courses.isEmpty()}" class="alert alert-info">No courses found for "<span th:text="${q}"></span>". Try a different keyword.</div>
+        <!-- Server-side empty -->
+        <div th:if="${courses.isEmpty()}" class="empty-state">
+            <i class="bi bi-inboxes" style="font-size:2rem;"></i>
+            <h6 class="text-white mt-2">No courses found for "<span th:text="${q}"></span>"</h6>
+            <p class="small mb-3" style="color: var(--text-secondary);">Try a different keyword — e.g. <strong class="text-white">CSE</strong>, <strong class="text-white">Java</strong>, <strong class="text-white">Database</strong></p>
+            <a th:href="@{/courses}" class="btn btn-purple btn-sm">Clear search</a>
+        </div>
 
-        <div class="row g-3" th:if="${!courses.isEmpty()}">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                            <tr>
-                                <th>Course Code</th>
-                                <th>Title</th>
-                                <th class="text-center">Credit</th>
-                                <th>Category</th>
-                                <th>Type</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="c : ${courses}">
-                                <td><span class="badge bg-primary" th:text="${c.courseCode}">CSE141</span></td>
-                                <td class="fw-medium" th:text="${c.title}">Title</td>
-                                <td class="text-center" th:text="${c.credit % 1 == 0 ? #numbers.formatDecimal(c.credit,1,0) : c.credit}">3</td>
-                                <td>
-                                    <span class="badge"
-                                          th:classappend="${c.category.name() == 'CORE'} ? 'bg-success' : (${c.category.name() == 'ELECTIVE'} ? 'bg-warning text-dark' : (${c.category.name() == 'GENERAL'} ? 'bg-info text-dark' : (${c.category.name() == 'PROJECT_INTERNSHIP'} ? 'bg-dark' : (${c.category.name() == 'RESEARCH_METHODOLOGY'} ? 'bg-secondary' : 'bg-light text-dark border'))))"
-                                          th:text="${c.category}">CORE</span>
-                                </td>
-                                <td><span class="badge bg-light text-dark border" th:text="${c.courseType}">THEORY</span></td>
-                                <td><a th:href="@{'/courses/' + ${c.courseCode}}" class="btn btn-sm btn-outline-primary">Details</a></td>
-                            </tr>
-                            </tbody>
-                        </table>
+        <!-- Client-side no results (hidden by default) -->
+        <div id="courseNoResults" class="empty-state" style="display:none;">
+            <i class="bi bi-search" style="font-size:2rem;"></i>
+            <h6 class="text-white mt-2">No courses match your search.</h6>
+            <p class="small mb-0" style="color: var(--text-secondary);">Try <strong class="text-white">CSE</strong>, <strong class="text-white">Java</strong> or <strong class="text-white">Database</strong> — or clear the search.</p>
+        </div>
+
+        <!-- Table (desktop) -->
+        <div id="courseTableWrapper" th:if="${!courses.isEmpty()}" class="card-seu p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-seu align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Title</th>
+                        <th class="text-center">Credit</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c : ${courses}" data-course-row th:attr="data-code=${c.courseCode},data-title=${c.title}">
+                        <td><span class="badge badge-purple" th:text="${c.courseCode}">CSE141</span></td>
+                        <td class="fw-medium" th:text="${c.title}">Title</td>
+                        <td class="text-center" style="color: var(--text-secondary);" th:text="${c.credit % 1 == 0 ? #numbers.formatDecimal(c.credit,1,0) : c.credit}">3</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${c.category.name() == 'CORE'} ? 'badge-core' : (${c.category.name() == 'ELECTIVE'} ? 'badge-elective' : (${c.category.name() == 'GENERAL'} ? 'badge-general' : (${c.category.name() == 'PROJECT_INTERNSHIP'} ? 'badge-project' : (${c.category.name() == 'RESEARCH_METHODOLOGY'} ? 'badge-research' : 'badge-remedial'))))"
+                                  th:text="${c.category}">CORE</span>
+                        </td>
+                        <td><span class="badge badge-type" th:text="${c.courseType}">THEORY</span></td>
+                        <td><a th:href="@{'/courses/' + ${c.courseCode}}" class="btn btn-ghost btn-sm">Details <i class="bi bi-chevron-right ms-1" style="font-size:0.7rem;"></i></a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cards (mobile) - hidden on lg, shown on small via CSS if needed; we keep table as primary -->
+        <div class="d-lg-none mt-3" th:if="${!courses.isEmpty()}">
+            <div class="row g-3">
+                <div th:each="c : ${courses}" class="col-12" data-course-card th:attr="data-code=${c.courseCode},data-title=${c.title}">
+                    <div class="card-seu p-3">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                            <span class="badge badge-purple" th:text="${c.courseCode}">CSE141</span>
+                            <span class="small" style="color: var(--text-muted);" th:text="${c.credit % 1 == 0 ? #numbers.formatDecimal(c.credit,1,0) + ' cr' : c.credit + ' cr'}">3 cr</span>
+                        </div>
+                        <h6 class="text-white mb-1" th:text="${c.title}">Title</h6>
+                        <div class="d-flex gap-2 flex-wrap mb-3">
+                            <span class="badge" th:classappend="${c.category.name() == 'CORE'} ? 'badge-core' : (${c.category.name() == 'ELECTIVE'} ? 'badge-elective' : (${c.category.name() == 'GENERAL'} ? 'badge-general' : (${c.category.name() == 'PROJECT_INTERNSHIP'} ? 'badge-project' : (${c.category.name() == 'RESEARCH_METHODOLOGY'} ? 'badge-research' : 'badge-remedial'))))" th:text="${c.category}">CORE</span>
+                            <span class="badge badge-type" th:text="${c.courseType}">THEORY</span>
+                        </div>
+                        <a th:href="@{'/courses/' + ${c.courseCode}}" class="btn btn-purple btn-sm w-100">View details</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Card view for mobile alternative -->
-        <div class="row g-3 d-none">
-            <div th:each="c : ${courses}" class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body">
-                        <span class="badge bg-primary mb-2" th:text="${c.courseCode}">CSE141</span>
-                        <h6 class="card-title" th:text="${c.title}">Title</h6>
-                        <p class="small text-muted mb-2"><span th:text="${c.credit}">3</span> credits &middot; <span th:text="${c.category}">CORE</span> &middot; <span th:text="${c.courseType}">THEORY</span></p>
-                        <a th:href="@{'/courses/' + ${c.courseCode}}" class="btn btn-sm btn-outline-primary">View Details</a>
-                    </div>
-                </div>
-            </div>
+        <div class="small mt-3 d-flex align-items-center gap-2" style="color: var(--text-muted);">
+            <i class="bi bi-info-circle"></i> Client-side search is instant — no page reload. Server search also available via <code style="color: var(--text-secondary);">?q=</code>.
         </div>
     </div>
 </section>

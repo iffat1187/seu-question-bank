@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
 <head>
-    <title>Not Found - SEU Question Bank</title>
+    <title>Not Found — SEU Question Bank</title>
 </head>
 <body>
 <section>
     <div class="container py-5 text-center">
-        <h1 class="display-4">404</h1>
-        <p class="lead">Course not found.</p>
-        <a href="/courses" class="btn btn-primary">Back to Courses</a>
+        <div class="card-seu p-5 mx-auto" style="max-width: 560px;">
+            <div class="mb-3 d-inline-flex align-items-center justify-content-center rounded-circle" style="width:64px; height:64px; background: var(--purple-soft); border:1px solid var(--purple-border);"><i class="bi bi-search text-purple" style="font-size:1.6rem;"></i></div>
+            <h2 class="text-white">404</h2>
+            <p class="mb-1 text-white">Course not found.</p>
+            <p class="small mb-4" style="color: var(--text-secondary);">The page you’re looking for doesn’t exist or the course code is invalid.</p>
+            <a th:href="@{/courses}" class="btn btn-purple">Back to Courses</a>
+        </div>
     </div>
 </section>
 </body>

@@ -43,24 +43,9 @@ public class AcademicApiController {
         return programService.findAll();
     }
 
-    // Also support view spec: GET /programs (returns JSON if Accept JSON, but spec says page - handled by view controller fallback)
-    // Provide REST alias required by spec
-    @GetMapping("/programs")
-    public ResponseEntity<?> programsView() {
-        // If client expects HTML, HomeController/Course flow handles browser; for API JSON fallback return JSON
-        // This keeps REST simple - return JSON. Thymeleaf view is via separate controller if needed but spec allows GET /programs for browsing
-        // To avoid collision with HTML, we return JSON and let content negotiation decide - simplest: return JSON list
-        return ResponseEntity.ok(programService.findAll());
-    }
-
     @GetMapping("/api/departments")
     public List<Department> departments() {
         return departmentService.findAll();
-    }
-
-    @GetMapping("/departments")
-    public ResponseEntity<List<Department>> departmentsView() {
-        return ResponseEntity.ok(departmentService.findAll());
     }
 
     @GetMapping("/api/courses")
@@ -80,18 +65,8 @@ public class AcademicApiController {
         return facultyService.findAll();
     }
 
-    @GetMapping("/faculty")
-    public ResponseEntity<List<Faculty>> facultyView() {
-        return ResponseEntity.ok(facultyService.findAll());
-    }
-
     @GetMapping("/api/course-offerings")
     public List<CourseOffering> offerings() {
         return courseOfferingService.findAll();
-    }
-
-    @GetMapping("/course-offerings")
-    public ResponseEntity<List<CourseOffering>> offeringsView() {
-        return ResponseEntity.ok(courseOfferingService.findAll());
     }
 }
