@@ -12,11 +12,10 @@
             <h3 class="text-white fw-bold mb-1"><i class="bi bi-cloud-arrow-up me-2 text-purple"></i>Upload Question Paper</h3>
             <p class="small mb-4" style="color: var(--text-secondary);">Status will be <span class="badge badge-elective">PENDING</span> until ADMIN approves. Upload up to <strong class="text-white">5 images</strong> (JPG, PNG, WEBP, max 5MB each).</p>
 
-            <div th:if="${#fields.hasErrors('*')}" class="alert py-2 small mb-3" style="background: rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.25); color:#fda4af; border-radius:10px;">
-                Please fix the errors below.
-            </div>
-
             <form th:action="@{/question-papers/create}" th:object="${questionPaper}" method="post" enctype="multipart/form-data" novalidate>
+                <div th:if="${#fields.hasErrors('*')}" class="alert py-2 small mb-3" style="background: rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.25); color:#fda4af; border-radius:10px;">
+                    Please fix the errors below.
+                </div>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="courseCode" class="form-label small fw-semibold" style="color: var(--text-secondary);">Course Code *</label>
