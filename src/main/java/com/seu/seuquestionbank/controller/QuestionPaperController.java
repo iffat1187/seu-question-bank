@@ -4,31 +4,42 @@ import com.seu.seuquestionbank.enums.ExamType;
 import com.seu.seuquestionbank.enums.PaperStatus;
 import com.seu.seuquestionbank.model.Course;
 import com.seu.seuquestionbank.model.QuestionPaper;
+import com.seu.seuquestionbank.service.CloudinaryService;
 import com.seu.seuquestionbank.service.CourseService;
 import com.seu.seuquestionbank.service.QuestionPaperService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/question-papers")
 public class QuestionPaperController {
 
+    private static final Logger log = LoggerFactory.getLogger(QuestionPaperController.class);
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final int MAX_IMAGES = 5;
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/jpg", "image/png", "image/webp");
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
+
     private final QuestionPaperService questionPaperService;
     private final CourseService courseService;
+    private final CloudinaryService cloudinaryService;
 
-    public QuestionPaperController(QuestionPaperService questionPaperService, CourseService courseService) {
+    public QuestionPaperController(QuestionPaperService questionPaperService, CourseService courseService, CloudinaryService cloudinaryService) {
         this.questionPaperService = questionPaperService;
         this.courseService = courseService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     private boolean isAdmin(Authentication auth) {
@@ -51,8 +62,32 @@ public class QuestionPaperController {
 
     private boolean canEditOrDelete(QuestionPaper paper, Authentication auth) {
         if (isAdmin(auth)) return true;
-        // student can update/delete own PENDING
         return isOwner(paper, auth) && paper.getStatus() == PaperStatus.PENDING;
+    }
+
+    private void validateFiles(MultipartFile[] files, BindingResult bindingResult, String field) {
+        if (files == null) return;
+        List<MultipartFile> nonEmpty = Arrays.stream(files).filter(f -> f != null && !f.isEmpty()).toList();
+        if (nonEmpty.size() > MAX_IMAGES) {
+            bindingResult.rejectValue(field, "error." + field, "Maximum " + MAX_IMAGES + " images allowed");
+            return;
+        }
+        for (MultipartFile file : nonEmpty) {
+            if (file.getSize() > MAX_FILE_SIZE) {
+                bindingResult.rejectValue(field, "error." + field, "File " + file.getOriginalFilename() + " exceeds 5MB limit");
+            }
+            String contentType = file.getContentType();
+            String filename = file.getOriginalFilename();
+            String ext = "";
+            if (filename != null && filename.contains(".")) {
+                ext = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+            }
+            boolean typeOk = contentType != null && ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase());
+            boolean extOk = ALLOWED_EXTENSIONS.contains(ext);
+            if (!typeOk && !extOk) {
+                bindingResult.rejectValue(field, "error." + field, "File " + file.getOriginalFilename() + " has unsupported type. Allowed: JPG, JPEG, PNG, WEBP");
+            }
+        }
     }
 
     @GetMapping
@@ -62,25 +97,20 @@ public class QuestionPaperController {
         if (admin) {
             papers = questionPaperService.findAll();
         } else if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            // authenticated student: approved + own (including pending)
             List<QuestionPaper> approved = questionPaperService.findApproved();
             List<QuestionPaper> own = questionPaperService.findByUploadedBy(auth.getName());
-            // merge without duplicates
             Map<String, QuestionPaper> map = new LinkedHashMap<>();
             for (QuestionPaper p : approved) map.put(p.getId(), p);
             for (QuestionPaper p : own) map.put(p.getId(), p);
             papers = new ArrayList<>(map.values());
-            // sort by createdAt desc
             papers.sort(Comparator.comparing(QuestionPaper::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
         } else {
             papers = questionPaperService.findApproved();
             papers.sort(Comparator.comparing(QuestionPaper::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
         }
-
         model.addAttribute("papers", papers);
         model.addAttribute("isAdmin", admin);
         model.addAttribute("currentPath", request.getRequestURI());
-        // for filtering in template if needed
         model.addAttribute("currentUser", auth != null ? auth.getName() : null);
         return "question-papers";
     }
@@ -94,7 +124,6 @@ public class QuestionPaperController {
         }
         QuestionPaper paper = opt.get();
         if (!canView(paper, auth)) {
-            // hide existence: return 404 for public trying to view pending of others
             model.addAttribute("currentPath", request.getRequestURI());
             return "error/404";
         }
@@ -113,7 +142,6 @@ public class QuestionPaperController {
         model.addAttribute("courses", courseService.findAll());
         model.addAttribute("examTypes", ExamType.values());
         model.addAttribute("currentPath", request.getRequestURI());
-        // for imageUrls textarea
         model.addAttribute("imageUrlsText", "");
         return "question-paper-create";
     }
@@ -121,6 +149,7 @@ public class QuestionPaperController {
     @PostMapping("/create")
     public String createSubmit(@Valid @ModelAttribute("questionPaper") QuestionPaper questionPaper,
                                BindingResult bindingResult,
+                               @RequestParam(value = "imageFiles", required = false) MultipartFile[] imageFiles,
                                @RequestParam(value = "imageUrlsText", required = false) String imageUrlsText,
                                Model model,
                                HttpServletRequest request,
@@ -134,25 +163,57 @@ public class QuestionPaperController {
             model.addAttribute("imageUrlsText", imageUrlsText);
             return "question-paper-create";
         }
-
         if (questionPaper.getCourseCode() == null || questionPaper.getCourseCode().isBlank()) {
             bindingResult.rejectValue("courseCode", "error.courseCode", "Course code is required");
             model.addAttribute("imageUrlsText", imageUrlsText);
             return "question-paper-create";
         }
 
-        // parse imageUrls
-        List<String> urls = parseImageUrls(imageUrlsText);
-        questionPaper.setImageUrls(urls);
+        // Validate files
+        validateFiles(imageFiles, bindingResult, "imageUrls");
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("imageUrlsText", imageUrlsText);
+            return "question-paper-create";
+        }
 
-        // set courseTitle from course if exists
+        List<String> urls = new ArrayList<>();
+        // Prefer uploaded files; fallback to text URLs for backward compat
+        boolean hasFiles = imageFiles != null && Arrays.stream(imageFiles).anyMatch(f -> f != null && !f.isEmpty());
+        if (hasFiles) {
+            try {
+                for (MultipartFile file : imageFiles) {
+                    if (file == null || file.isEmpty()) continue;
+                    String url = cloudinaryService.uploadFile(file);
+                    if (url != null) urls.add(url);
+                }
+            } catch (Exception e) {
+                log.error("Cloudinary upload failed", e);
+                bindingResult.rejectValue("imageUrls", "error.imageUrls", "Failed to upload images: " + e.getMessage());
+                model.addAttribute("imageUrlsText", imageUrlsText);
+                return "question-paper-create";
+            }
+        } else {
+            urls = parseImageUrls(imageUrlsText);
+        }
+
+        if (urls.isEmpty()) {
+            bindingResult.rejectValue("imageUrls", "error.imageUrls", "At least one image is required");
+            model.addAttribute("imageUrlsText", imageUrlsText);
+            return "question-paper-create";
+        }
+        if (urls.size() > MAX_IMAGES) {
+            bindingResult.rejectValue("imageUrls", "error.imageUrls", "Maximum " + MAX_IMAGES + " images allowed");
+            model.addAttribute("imageUrlsText", imageUrlsText);
+            return "question-paper-create";
+        }
+
+        questionPaper.setImageUrls(urls);
         Optional<Course> courseOpt = courseService.findByCourseCode(questionPaper.getCourseCode().trim());
         if (courseOpt.isPresent()) {
             questionPaper.setCourseTitle(courseOpt.get().getTitle());
         } else if (questionPaper.getCourseTitle() == null || questionPaper.getCourseTitle().isBlank()) {
             questionPaper.setCourseTitle(questionPaper.getCourseCode());
         }
-
         questionPaper.setUploadedBy(auth.getName());
         questionPaper.setStatus(PaperStatus.PENDING);
         QuestionPaper saved = questionPaperService.create(questionPaper);
@@ -180,6 +241,8 @@ public class QuestionPaperController {
         model.addAttribute("currentPath", request.getRequestURI());
         String urlsText = paper.getImageUrls() != null ? String.join("\n", paper.getImageUrls()) : "";
         model.addAttribute("imageUrlsText", urlsText);
+        // for edit preview, pass existing urls
+        model.addAttribute("existingImageUrls", paper.getImageUrls() != null ? paper.getImageUrls() : List.of());
         return "question-paper-edit";
     }
 
@@ -187,6 +250,8 @@ public class QuestionPaperController {
     public String editSubmit(@PathVariable String id,
                              @Valid @ModelAttribute("questionPaper") QuestionPaper formPaper,
                              BindingResult bindingResult,
+                             @RequestParam(value = "imageFiles", required = false) MultipartFile[] imageFiles,
+                             @RequestParam(value = "existingImageUrls", required = false) List<String> existingImageUrls,
                              @RequestParam(value = "imageUrlsText", required = false) String imageUrlsText,
                              @RequestParam(value = "status", required = false) String statusParam,
                              Model model,
@@ -203,7 +268,6 @@ public class QuestionPaperController {
             model.addAttribute("currentPath", request.getRequestURI());
             return "error/403";
         }
-
         model.addAttribute("courses", courseService.findAll());
         model.addAttribute("examTypes", ExamType.values());
         model.addAttribute("paperStatuses", PaperStatus.values());
@@ -212,16 +276,74 @@ public class QuestionPaperController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("imageUrlsText", imageUrlsText);
-            // keep id for form
+            model.addAttribute("existingImageUrls", existing.getImageUrls());
             formPaper.setId(id);
             return "question-paper-edit";
         }
 
-        // parse urls
-        List<String> urls = parseImageUrls(imageUrlsText);
-        formPaper.setImageUrls(urls);
+        // Validate new files
+        validateFiles(imageFiles, bindingResult, "imageUrls");
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("imageUrlsText", imageUrlsText);
+            model.addAttribute("existingImageUrls", existing.getImageUrls());
+            formPaper.setId(id);
+            return "question-paper-edit";
+        }
 
-        // courseTitle
+        List<String> finalUrls = new ArrayList<>();
+        // Keep existing URLs that are checked to keep (if provided)
+        if (existingImageUrls != null && !existingImageUrls.isEmpty()) {
+            finalUrls.addAll(existingImageUrls.stream().map(String::trim).filter(s -> !s.isBlank()).toList());
+        } else {
+            // if no explicit existing list, keep all existing (for backward compat when no checkbox)
+            // but if new files are provided, we will merge
+            if (existing.getImageUrls() != null) {
+                // keep existing unless new upload replaces? For simplicity keep existing
+                finalUrls.addAll(existing.getImageUrls());
+            }
+        }
+        // Also handle fallback text URLs if no files and no existing
+        boolean hasNewFiles = imageFiles != null && Arrays.stream(imageFiles).anyMatch(f -> f != null && !f.isEmpty());
+        if (hasNewFiles) {
+            try {
+                for (MultipartFile file : imageFiles) {
+                    if (file == null || file.isEmpty()) continue;
+                    String url = cloudinaryService.uploadFile(file);
+                    if (url != null) finalUrls.add(url);
+                }
+            } catch (Exception e) {
+                log.error("Cloudinary upload failed on edit", e);
+                bindingResult.rejectValue("imageUrls", "error.imageUrls", "Failed to upload images: " + e.getMessage());
+                model.addAttribute("imageUrlsText", imageUrlsText);
+                model.addAttribute("existingImageUrls", existing.getImageUrls());
+                formPaper.setId(id);
+                return "question-paper-edit";
+            }
+        } else if (finalUrls.isEmpty()) {
+            // fallback to text
+            List<String> textUrls = parseImageUrls(imageUrlsText);
+            finalUrls.addAll(textUrls);
+        }
+
+        // Remove duplicates
+        finalUrls = finalUrls.stream().distinct().toList();
+
+        if (finalUrls.isEmpty()) {
+            bindingResult.rejectValue("imageUrls", "error.imageUrls", "At least one image is required");
+            model.addAttribute("imageUrlsText", imageUrlsText);
+            model.addAttribute("existingImageUrls", existing.getImageUrls());
+            formPaper.setId(id);
+            return "question-paper-edit";
+        }
+        if (finalUrls.size() > MAX_IMAGES) {
+            bindingResult.rejectValue("imageUrls", "error.imageUrls", "Maximum " + MAX_IMAGES + " images allowed (currently " + finalUrls.size() + ")");
+            model.addAttribute("imageUrlsText", imageUrlsText);
+            model.addAttribute("existingImageUrls", existing.getImageUrls());
+            formPaper.setId(id);
+            return "question-paper-edit";
+        }
+
+        formPaper.setImageUrls(finalUrls);
         Optional<Course> courseOpt = courseService.findByCourseCode(formPaper.getCourseCode().trim());
         if (courseOpt.isPresent()) {
             formPaper.setCourseTitle(courseOpt.get().getTitle());
@@ -229,21 +351,14 @@ public class QuestionPaperController {
             formPaper.setCourseTitle(formPaper.getCourseCode());
         }
 
-        // handle status change only for admin
         if (isAdmin(auth) && statusParam != null && !statusParam.isBlank()) {
             try {
                 PaperStatus newStatus = PaperStatus.valueOf(statusParam);
-                // admin can change status; if student tries to set status we ignore
                 existing.setStatus(newStatus);
                 questionPaperService.updateStatus(id, newStatus);
-            } catch (IllegalArgumentException ignored) {
-            }
+            } catch (IllegalArgumentException ignored) {}
         }
-
-        // update other fields (service will keep uploadedBy/status if not admin)
-        // we must not overwrite uploadedBy
         formPaper.setUploadedBy(existing.getUploadedBy());
-        // keep original status if not admin changed above
         if (!isAdmin(auth)) {
             formPaper.setStatus(existing.getStatus());
         } else if (statusParam == null) {
@@ -257,13 +372,11 @@ public class QuestionPaperController {
         }
 
         questionPaperService.update(id, formPaper);
-        // if admin changed status, ensure it persists
         if (isAdmin(auth) && statusParam != null) {
             try {
                 questionPaperService.updateStatus(id, PaperStatus.valueOf(statusParam));
             } catch (Exception ignored) {}
         }
-
         redirectAttributes.addFlashAttribute("success", "Question paper updated.");
         return "redirect:/question-papers/" + id;
     }
@@ -280,6 +393,18 @@ public class QuestionPaperController {
             model.addAttribute("currentPath", request.getRequestURI());
             return "error/403";
         }
+        // If ADMIN, delete Cloudinary images safely
+        if (isAdmin(auth) && paper.getImageUrls() != null) {
+            for (String url : paper.getImageUrls()) {
+                try {
+                    cloudinaryService.deleteImage(url);
+                } catch (Exception e) {
+                    log.warn("Failed to delete Cloudinary image on admin delete {}: {}", url, e.getMessage());
+                }
+            }
+        }
+        // Also handle student delete: optionally delete images but spec says ADMIN, so we only do for admin
+        // For safety, if student deletes own pending, we could also try to delete but not required
         questionPaperService.delete(id);
         redirectAttributes.addFlashAttribute("success", "Question paper deleted.");
         return "redirect:/question-papers";
@@ -308,7 +433,6 @@ public class QuestionPaperController {
 
     private List<String> parseImageUrls(String text) {
         if (text == null || text.isBlank()) return new ArrayList<>();
-        // split by newline or comma
         String[] parts = text.split("[\\r\\n,]+");
         List<String> result = new ArrayList<>();
         for (String p : parts) {

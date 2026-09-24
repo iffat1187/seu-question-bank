@@ -10,9 +10,13 @@
 
         <div class="card-seu p-4">
             <h3 class="text-white fw-bold mb-1"><i class="bi bi-cloud-arrow-up me-2 text-purple"></i>Upload Question Paper</h3>
-            <p class="small mb-4" style="color: var(--text-secondary);">Status will be <span class="badge badge-elective">PENDING</span> until ADMIN approves. For now enter image URLs directly (Phase 4 will add Cloudinary upload).</p>
+            <p class="small mb-4" style="color: var(--text-secondary);">Status will be <span class="badge badge-elective">PENDING</span> until ADMIN approves. Upload up to <strong class="text-white">5 images</strong> (JPG, PNG, WEBP, max 5MB each).</p>
 
-            <form th:action="@{/question-papers/create}" th:object="${questionPaper}" method="post" novalidate>
+            <div th:if="${#fields.hasErrors('*')}" class="alert py-2 small mb-3" style="background: rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.25); color:#fda4af; border-radius:10px;">
+                Please fix the errors below.
+            </div>
+
+            <form th:action="@{/question-papers/create}" th:object="${questionPaper}" method="post" enctype="multipart/form-data" novalidate>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="courseCode" class="form-label small fw-semibold" style="color: var(--text-secondary);">Course Code *</label>
@@ -51,15 +55,69 @@
                         </select>
                     </div>
                     <div class="col-12">
-                        <label for="imageUrlsText" class="form-label small fw-semibold" style="color: var(--text-secondary);">Image URLs (one per line or comma-separated)</label>
-                        <textarea id="imageUrlsText" name="imageUrlsText" class="form-control form-control-seu" rows="3" placeholder="https://example.com/page1.jpg&#10;https://example.com/page2.jpg" th:text="${imageUrlsText}"></textarea>
-                        <div class="small mt-1" style="color: var(--text-muted);">For now paste direct image URLs. In Phase 4 this will be file upload via Cloudinary.</div>
+                        <label for="imageFiles" class="form-label small fw-semibold" style="color: var(--text-secondary);">Question Images * <span class="fw-normal" style="color: var(--text-muted);">(max 5, JPG/PNG/WEBP, 5MB each)</span></label>
+                        <input type="file" id="imageFiles" name="imageFiles" class="form-control form-control-seu" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple>
+                        <div class="invalid-feedback d-block small" th:if="${#fields.hasErrors('imageUrls')}" th:errors="*{imageUrls}"></div>
+                        <div id="fileError" class="small mt-1" style="color:#fda4af; display:none;"></div>
+                        <div id="preview" class="row g-2 mt-3"></div>
+                        <div class="small mt-2" style="color: var(--text-muted);">Images will be uploaded to Cloudinary and saved as secure URLs. Status will be PENDING.</div>
                     </div>
+                    <!-- Fallback for old URL input (hidden, for backward compat) -->
+                    <textarea id="imageUrlsText" name="imageUrlsText" class="d-none" th:text="${imageUrlsText}"></textarea>
                 </div>
                 <button type="submit" class="btn btn-purple w-100 mt-4 py-2">Submit for Approval <i class="bi bi-send ms-1"></i></button>
             </form>
         </div>
     </div>
+    <script>
+        (function(){
+            const input = document.getElementById('imageFiles');
+            const preview = document.getElementById('preview');
+            const err = document.getElementById('fileError');
+            if(!input) return;
+            const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
+            const maxSize = 5*1024*1024;
+            const maxFiles = 5;
+            input.addEventListener('change', function(){
+                preview.innerHTML = '';
+                err.style.display='none';
+                err.textContent='';
+                const files = Array.from(input.files);
+                if(files.length > maxFiles){
+                    err.textContent = 'Maximum ' + maxFiles + ' images allowed (selected ' + files.length + ')';
+                    err.style.display='block';
+                    input.value='';
+                    return;
+                }
+                for(const file of files){
+                    if(file.size > maxSize){
+                        err.textContent = file.name + ' exceeds 5MB limit';
+                        err.style.display='block';
+                        input.value='';
+                        preview.innerHTML='';
+                        return;
+                    }
+                    if(!allowed.includes(file.type) && !/\.(jpe?g|png|webp)$/i.test(file.name)){
+                        err.textContent = file.name + ' has unsupported type. Allowed: JPG, PNG, WEBP';
+                        err.style.display='block';
+                        input.value='';
+                        preview.innerHTML='';
+                        return;
+                    }
+                }
+                files.forEach(file=>{
+                    const reader = new FileReader();
+                    reader.onload = e=>{
+                        const col = document.createElement('div');
+                        col.className='col-4 col-md-3';
+                        col.innerHTML = '<div class="card-seu p-1"><img src="'+e.target.result+'" alt="preview" class="img-fluid rounded" style="height:110px; width:100%; object-fit:cover; background: var(--bg-secondary);"><div class="small text-truncate mt-1" style="color: var(--text-muted);">'+file.name+'</div></div>';
+                        preview.appendChild(col);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        })();
+    </script>
 </section>
 </body>
 </html>
