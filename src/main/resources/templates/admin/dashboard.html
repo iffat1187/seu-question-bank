@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Admin Dashboard — SEU Question Bank</title>
+</head>
+<body>
+<section>
+    <div class="container py-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold text-white mb-1"><i class="bi bi-shield-lock me-2 text-purple"></i>Admin Dashboard</h2>
+                <p class="small mb-0" style="color: var(--text-secondary);">Approve, reject and manage question papers.</p>
+            </div>
+            <a th:href="@{/question-papers}" class="btn btn-ghost btn-sm"><i class="bi bi-box-arrow-up-right me-1"></i> View Public Papers</a>
+        </div>
+
+        <div th:if="${success}" class="alert py-2 small mb-3" style="background: rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.25); color:#86efac; border-radius:10px;" th:text="${success}"></div>
+        <div th:if="${error}" class="alert py-2 small mb-3" style="background: rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.25); color:#fda4af; border-radius:10px;" th:text="${error}"></div>
+
+        <!-- Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card-seu p-3 text-center">
+                    <div class="small fw-semibold mb-1" style="color: var(--text-secondary);">Total Papers</div>
+                    <div class="fs-3 fw-bold text-white" th:text="${totalCount}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card-seu p-3 text-center" style="border-color: var(--purple-border);">
+                    <div class="small fw-semibold mb-1" style="color: var(--text-secondary);">Pending</div>
+                    <div class="fs-3 fw-bold text-purple" th:text="${pendingCount}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card-seu p-3 text-center" style="border-color: rgba(16,185,129,0.25);">
+                    <div class="small fw-semibold mb-1" style="color: var(--text-secondary);">Approved</div>
+                    <div class="fs-3 fw-bold" style="color:#86efac;" th:text="${approvedCount}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card-seu p-3 text-center" style="border-color: rgba(244,63,94,0.25);">
+                    <div class="small fw-semibold mb-1" style="color: var(--text-secondary);">Rejected</div>
+                    <div class="fs-3 fw-bold" style="color:#fda4af;" th:text="${rejectedCount}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Papers table -->
+        <div class="card-seu overflow-hidden">
+            <div class="p-3 small fw-semibold text-white d-flex align-items-center gap-2" style="background: var(--bg-secondary); border-bottom:1px solid var(--border);">
+                <i class="bi bi-table text-purple"></i> Question Papers
+                <span class="badge badge-type ms-auto" th:text="${#lists.size(papers)} + ' paper' + (${#lists.size(papers) == 1} ? '' : 's')">0 papers</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-seu mb-0">
+                    <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Title</th>
+                        <th>Faculty</th>
+                        <th>Semester</th>
+                        <th>Year</th>
+                        <th>Exam</th>
+                        <th>Uploaded By</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(papers)}">
+                        <td colspan="10">
+                            <div class="empty-state my-2">
+                                <i class="bi bi-inbox" style="font-size:2rem;"></i>
+                                <h6 class="text-white mt-2">No question papers</h6>
+                                <p class="small mb-0" style="color: var(--text-secondary);">Papers uploaded by students will appear here for review.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:each="p : ${papers}">
+                        <td><span class="badge badge-purple" th:text="${p.courseCode}">CSE141</span></td>
+                        <td class="fw-semibold" th:text="${p.courseTitle != null ? p.courseTitle : p.courseCode}">Title</td>
+                        <td th:text="${p.facultyName != null ? p.facultyName : '—'}">Faculty</td>
+                        <td th:text="${p.semester != null ? p.semester : '—'}">Fall</td>
+                        <td th:text="${p.academicYear != null ? p.academicYear : '—'}">2026</td>
+                        <td><span class="badge badge-type" th:if="${p.examType != null}" th:text="${p.examType}">FINAL</span><span th:if="${p.examType == null}">—</span></td>
+                        <td style="word-break:break-all;" th:text="${p.uploadedBy != null ? p.uploadedBy : '—'}">student@seu.edu.bd</td>
+                        <td>
+                            <span class="badge" th:classappend="${p.status.name() == 'APPROVED'} ? 'badge-core' : (${p.status.name() == 'PENDING'} ? 'badge-elective' : 'badge-remedial')" th:text="${p.status}">PENDING</span>
+                        </td>
+                        <td th:text="${p.createdAt != null ? #temporals.format(p.createdAt, 'yyyy-MM-dd') : '—'}" style="white-space:nowrap;">2026-09-23</td>
+                        <td>
+                            <div class="d-flex justify-content-end gap-1">
+                                <a th:href="@{'/question-papers/' + ${p.id}}" class="btn btn-ghost btn-sm" title="View details"><i class="bi bi-eye"></i></a>
+                                <form th:if="${p.status.name() != 'APPROVED'}" th:action="@{'/admin/' + ${p.id} + '/approve'}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm" title="Approve" style="color:#86efac; border:1px solid rgba(16,185,129,0.3); background: rgba(16,185,129,0.08);"><i class="bi bi-check-lg"></i></button>
+                                </form>
+                                <form th:if="${p.status.name() != 'REJECTED'}" th:action="@{'/admin/' + ${p.id} + '/reject'}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm" title="Reject" style="color:#fda4af; border:1px solid rgba(244,63,94,0.3); background: rgba(244,63,94,0.08);"><i class="bi bi-x-lg"></i></button>
+                                </form>
+                                <form th:action="@{'/admin/' + ${p.id} + '/delete'}" method="post" class="d-inline" onsubmit="return confirm('Delete this question paper? This cannot be undone.');">
+                                    <button type="submit" class="btn btn-ghost btn-sm" title="Delete" style="color:#fda4af;"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

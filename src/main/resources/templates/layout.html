@@ -29,6 +29,9 @@
                 <li class="nav-item">
                     <a class="nav-link" th:classappend="${#strings.startsWith(currentPath,'/question-papers') ? 'active' : ''}" th:href="@{/question-papers}">Papers</a>
                 </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:classappend="${#strings.startsWith(currentPath,'/admin') ? 'active' : ''}" th:href="@{/admin}"><i class="bi bi-shield-lock me-1"></i>Admin</a>
+                </li>
                 <li class="nav-item" sec:authorize="isAnonymous()">
                     <a class="nav-link" th:classappend="${#strings.equals(currentPath,'/login') ? 'active' : ''}" th:href="@{/login}">Login</a>
                 </li>
