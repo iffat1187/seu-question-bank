@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
@@ -174,13 +176,11 @@ public class QuestionPaperController {
     public String details(@PathVariable String id, Model model, HttpServletRequest request, Authentication auth) {
         Optional<QuestionPaper> opt = questionPaperService.findById(id);
         if (opt.isEmpty()) {
-            model.addAttribute("currentPath", request.getRequestURI());
-            return "error/404";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         QuestionPaper paper = opt.get();
         if (!canView(paper, auth)) {
-            model.addAttribute("currentPath", request.getRequestURI());
-            return "error/404";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         model.addAttribute("paper", paper);
         model.addAttribute("isAdmin", isAdmin(auth));
@@ -280,8 +280,7 @@ public class QuestionPaperController {
     public String editForm(@PathVariable String id, Model model, HttpServletRequest request, Authentication auth) {
         Optional<QuestionPaper> opt = questionPaperService.findById(id);
         if (opt.isEmpty()) {
-            model.addAttribute("currentPath", request.getRequestURI());
-            return "error/404";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         QuestionPaper paper = opt.get();
         if (!canEditOrDelete(paper, auth)) {
@@ -315,8 +314,7 @@ public class QuestionPaperController {
                              RedirectAttributes redirectAttributes) {
         Optional<QuestionPaper> opt = questionPaperService.findById(id);
         if (opt.isEmpty()) {
-            model.addAttribute("currentPath", request.getRequestURI());
-            return "error/404";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         QuestionPaper existing = opt.get();
         if (!canEditOrDelete(existing, auth)) {
@@ -440,8 +438,7 @@ public class QuestionPaperController {
     public String delete(@PathVariable String id, Authentication auth, HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
         Optional<QuestionPaper> opt = questionPaperService.findById(id);
         if (opt.isEmpty()) {
-            model.addAttribute("currentPath", request.getRequestURI());
-            return "error/404";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         QuestionPaper paper = opt.get();
         if (!canEditOrDelete(paper, auth)) {

@@ -3,11 +3,13 @@ package com.seu.seuquestionbank.controller;
 import com.seu.seuquestionbank.model.Course;
 import com.seu.seuquestionbank.service.CourseService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +42,7 @@ public class CourseController {
     public String courseDetails(@PathVariable String courseCode, Model model, HttpServletRequest request) {
         Optional<Course> courseOpt = courseService.findByCourseCode(courseCode);
         if (courseOpt.isEmpty()) {
-            return "error/404";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         model.addAttribute("course", courseOpt.get());
         model.addAttribute("currentPath", request.getRequestURI());
