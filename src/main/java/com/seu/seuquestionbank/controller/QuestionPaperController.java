@@ -91,28 +91,83 @@ public class QuestionPaperController {
     }
 
     @GetMapping
-    public String list(Model model, HttpServletRequest request, Authentication auth) {
-        List<QuestionPaper> papers;
+    public String list(@RequestParam(value = "search", required = false) String search,
+                       @RequestParam(value = "course", required = false) String course,
+                       @RequestParam(value = "semester", required = false) String semester,
+                       @RequestParam(value = "year", required = false) String year,
+                       @RequestParam(value = "examType", required = false) String examType,
+                       Model model, HttpServletRequest request, Authentication auth) {
+        Integer academicYear = parseYear(year);
+
+        List<QuestionPaper> base;
         boolean admin = isAdmin(auth);
         if (admin) {
-            papers = questionPaperService.findAll();
+            base = questionPaperService.findAll();
         } else if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
             List<QuestionPaper> approved = questionPaperService.findApproved();
             List<QuestionPaper> own = questionPaperService.findByUploadedBy(auth.getName());
             Map<String, QuestionPaper> map = new LinkedHashMap<>();
             for (QuestionPaper p : approved) map.put(p.getId(), p);
             for (QuestionPaper p : own) map.put(p.getId(), p);
-            papers = new ArrayList<>(map.values());
-            papers.sort(Comparator.comparing(QuestionPaper::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+            base = new ArrayList<>(map.values());
         } else {
-            papers = questionPaperService.findApproved();
-            papers.sort(Comparator.comparing(QuestionPaper::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+            base = questionPaperService.findApproved();
         }
+
+        // Distinct filter options derived from the papers this user may see
+        Map<String, String> courseOptions = new TreeMap<>();
+        TreeSet<Integer> yearOptions = new TreeSet<>(Comparator.reverseOrder());
+        for (QuestionPaper p : base) {
+            if (p.getCourseCode() != null && !p.getCourseCode().isBlank()) {
+                courseOptions.putIfAbsent(p.getCourseCode().trim(),
+                        p.getCourseTitle() != null ? p.getCourseTitle() : p.getCourseCode().trim());
+            }
+            if (p.getAcademicYear() != null) {
+                yearOptions.add(p.getAcademicYear());
+            }
+        }
+
+        List<QuestionPaper> papers =
+                questionPaperService.filter(base, search, course, semester, academicYear, examType);
+        papers = new ArrayList<>(papers);
+        papers.sort(Comparator.comparing(QuestionPaper::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+
+        boolean hasFilters = notBlank(search) || notBlank(course) || notBlank(semester)
+                || notBlank(examType) || academicYear != null;
+
         model.addAttribute("papers", papers);
         model.addAttribute("isAdmin", admin);
         model.addAttribute("currentPath", request.getRequestURI());
         model.addAttribute("currentUser", auth != null ? auth.getName() : null);
+
+        model.addAttribute("search", trimToEmpty(search));
+        model.addAttribute("courseCode", trimToEmpty(course));
+        model.addAttribute("semester", trimToEmpty(semester));
+        model.addAttribute("examType", trimToEmpty(examType));
+        model.addAttribute("year", academicYear);
+        model.addAttribute("hasFilters", hasFilters);
+        model.addAttribute("courseOptions", courseOptions);
+        model.addAttribute("yearOptions", new ArrayList<>(yearOptions));
+        model.addAttribute("semesters", List.of("Spring", "Fall", "Summer"));
+        model.addAttribute("examTypes", ExamType.values());
         return "question-papers";
+    }
+
+    private Integer parseYear(String year) {
+        if (year == null || year.isBlank()) return null;
+        try {
+            return Integer.parseInt(year.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private boolean notBlank(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
 
     @GetMapping("/{id}")

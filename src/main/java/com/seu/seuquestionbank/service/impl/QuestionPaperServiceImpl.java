@@ -7,6 +7,7 @@ import com.seu.seuquestionbank.service.QuestionPaperService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -95,5 +96,53 @@ public class QuestionPaperServiceImpl implements QuestionPaperService {
     @Override
     public long count() {
         return repository.count();
+    }
+
+    @Override
+    public List<QuestionPaper> filter(List<QuestionPaper> source, String search, String courseCode,
+                                      String semester, Integer academicYear, String examType) {
+        if (source == null || source.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String q = search == null ? "" : search.trim().toLowerCase();
+        String cc = courseCode == null ? "" : courseCode.trim().toLowerCase();
+        String sem = semester == null ? "" : semester.trim().toLowerCase();
+        String et = examType == null ? "" : examType.trim().toLowerCase();
+
+        List<QuestionPaper> result = new ArrayList<>();
+        for (QuestionPaper p : source) {
+            if (!q.isEmpty()) {
+                boolean matches = contains(p.getCourseCode(), q)
+                        || contains(p.getCourseTitle(), q)
+                        || contains(p.getFacultyName(), q);
+                if (!matches) {
+                    continue;
+                }
+            }
+            if (!cc.isEmpty() && !cc.equalsIgnoreCase(trim(p.getCourseCode()))) {
+                continue;
+            }
+            if (!sem.isEmpty() && !sem.equalsIgnoreCase(trim(p.getSemester()))) {
+                continue;
+            }
+            if (academicYear != null && !academicYear.equals(p.getAcademicYear())) {
+                continue;
+            }
+            if (!et.isEmpty()) {
+                if (p.getExamType() == null || !et.equals(p.getExamType().name().toLowerCase())) {
+                    continue;
+                }
+            }
+            result.add(p);
+        }
+        return result;
+    }
+
+    private boolean contains(String value, String lowerCaseQuery) {
+        return value != null && value.toLowerCase().contains(lowerCaseQuery);
+    }
+
+    private String trim(String value) {
+        return value == null ? "" : value.trim();
     }
 }

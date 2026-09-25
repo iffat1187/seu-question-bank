@@ -16,4 +16,6 @@ public interface QuestionPaperService {
     void delete(String id);
     QuestionPaper updateStatus(String id, PaperStatus status);
     long count();
+    List<QuestionPaper> filter(List<QuestionPaper> source, String search, String courseCode,
+                               String semester, Integer academicYear, String examType);
 }
